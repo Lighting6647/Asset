@@ -126,6 +126,84 @@
         <button id="btn-show-scan-asset" class="btn hidden" style="flex: 1; min-width: 200px; padding: 0.75rem; font-size: 1rem; background: var(--accent-indigo); color: white; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);">๐“ท เธชเนเธเธ QR (Scan Asset)</button>
       </div>
 
+      <!-- ICLOUD DASHBOARD -->
+      <div id="icloud-dashboard" class="icloud-dashboard-container">
+        <!-- Profile -->
+        <div class="icloud-widget profile-widget" id="icloud-widget-settings">
+          <div class="profile-img">?????</div>
+          <h3>Admin</h3>
+          <p>admin@ios-monitor.local</p>
+          <span class="profile-badge">Asset+</span>
+        </div>
+        
+        <!-- Alerts / Backlog (Mail-style) -->
+        <div class="icloud-widget span-2" id="icloud-widget-alerts">
+          <div class="widget-header">
+            <div class="widget-icon" style="background: linear-gradient(135deg, #007aff, #0052d4);">??</div>
+            <span class="widget-action">??</span>
+          </div>
+          <div class="widget-header">
+            <h3>ศูนย์แจ้งเตือน (Alerts)</h3>
+            <span id="widget-alert-count">กำลังโหลด...</span>
+          </div>
+          <div class="widget-content">
+            <p>รายการที่ต้องดำเนินการจากข้อมูลล่าสุด หรือรายการค้างในระบบ</p>
+          </div>
+        </div>
+
+        <!-- Dashboard (Drive-style) -->
+        <div class="icloud-widget span-2" id="icloud-widget-dashboard">
+          <div class="widget-header">
+            <div class="widget-icon" style="background: linear-gradient(135deg, #34c759, #30b653);">??</div>
+            <span class="widget-action">??</span>
+          </div>
+          <div class="widget-header">
+            <h3>แดชบอร์ดอุปกรณ์</h3>
+            <span>รายการล่าสุด</span>
+          </div>
+          <div class="widget-content">
+            <p>จัดการอุปกรณ์ iOS ที่ลงทะเบียนและตรวจสอบสถานะ</p>
+          </div>
+        </div>
+
+        <!-- Apps Grid (Photos/Apps-style) -->
+        <div class="icloud-widget">
+          <div class="app-grid">
+            <div class="app-icon" id="icloud-widget-assets">
+              <div class="app-icon-bg" style="background: linear-gradient(135deg, #ff9500, #ff5e3a);">??</div>
+              <span>ทรัพย์สิน</span>
+            </div>
+            <div class="app-icon" id="icloud-widget-scan">
+              <div class="app-icon-bg" style="background: linear-gradient(135deg, #af52de, #8e44ad);">??</div>
+              <span>สแกน QR</span>
+            </div>
+            <div class="app-icon" id="icloud-widget-log">
+              <div class="app-icon-bg" style="background: linear-gradient(135deg, #ff3b30, #c0392b);">??</div>
+              <span>ประวัติ</span>
+            </div>
+            <div class="app-icon" id="icloud-widget-analytics">
+              <div class="app-icon-bg" style="background: linear-gradient(135deg, #5856d6, #48484a);">??</div>
+              <span>วิเคราะห์</span>
+            </div>
+            <div class="app-icon" id="icloud-widget-report-devices">
+              <div class="app-icon-bg" style="background: linear-gradient(135deg, #8e8e93, #48484a);">??</div>
+              <span>รายงานอุป...</span>
+            </div>
+            <div class="app-icon" id="icloud-widget-report-assets">
+              <div class="app-icon-bg" style="background: linear-gradient(135deg, #8e8e93, #48484a);">??</div>
+              <span>รายงานทรั...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- DASHBOARD BACK BUTTON FOR ICLOUD VIEWS -->
+      <button id="btn-icloud-back" class="btn btn-secondary hidden" style="margin-bottom: 1rem; border-radius: 20px; backdrop-filter: blur(10px); background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:0.5rem;"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        กลับสู่หน้าหลัก
+      </button>
+
+      <div id="icloud-view-container" class="hidden view-section-overlay">
       <div id="devices-section-content">
       <div id="devices-overview-panel">
       <!-- STATS OVERVIEW -->
@@ -646,6 +724,7 @@
           </div>
         </div>
       </div>
+          </div> <!-- End icloud-view-container -->
     </main>
 
     <!-- ==================== CLIENT (iOS) VIEW ==================== -->
@@ -726,6 +805,7 @@
           </select>
         </div>
       </div>
+          </div> <!-- End icloud-view-container -->
     </main>
       </div>
     </div>
@@ -771,5 +851,81 @@
   <!-- Client JavaScript -->
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
   <script src="app.js"></script>
+<script>
+  // iCloud GSAP Animations and Routing
+  document.addEventListener("DOMContentLoaded", () => {
+    if (typeof gsap === "undefined") return;
+
+    const dashboard = document.getElementById("icloud-dashboard");
+    const viewContainer = document.getElementById("icloud-view-container");
+    const backBtn = document.getElementById("btn-icloud-back");
+
+    // GSAP Entry Animation
+    gsap.from(".icloud-widget", {
+      duration: 0.8,
+      y: 50,
+      opacity: 0,
+      stagger: 0.1,
+      ease: "power3.out",
+      delay: 0.2
+    });
+
+    function openIcloudView(targetSidebarBtnId) {
+      const targetBtn = document.getElementById(targetSidebarBtnId);
+      if (targetBtn) targetBtn.click();
+
+      gsap.to(dashboard, {
+        duration: 0.4,
+        opacity: 0,
+        scale: 0.95,
+        ease: "power2.inOut",
+        onComplete: () => {
+          dashboard.classList.add("hidden");
+          viewContainer.classList.remove("hidden");
+          backBtn.classList.remove("hidden");
+          
+          // Force layout recalculation
+          window.dispatchEvent(new Event('resize'));
+          
+          gsap.fromTo([backBtn, viewContainer], 
+            { opacity: 0, y: 20 }, 
+            { opacity: 1, y: 0, duration: 0.5, stagger: 0.1, ease: "power2.out" }
+          );
+        }
+      });
+    }
+
+    document.getElementById("icloud-widget-dashboard")?.addEventListener("click", () => openIcloudView("sb-dashboard"));
+    document.getElementById("icloud-widget-alerts")?.addEventListener("click", () => openIcloudView("sb-alert-center"));
+    document.getElementById("icloud-widget-assets")?.addEventListener("click", () => openIcloudView("sb-assets"));
+    document.getElementById("icloud-widget-scan")?.addEventListener("click", () => openIcloudView("sb-scan-qr"));
+    document.getElementById("icloud-widget-log")?.addEventListener("click", () => openIcloudView("sb-activity-log"));
+    document.getElementById("icloud-widget-analytics")?.addEventListener("click", () => openIcloudView("sb-asset-analytics"));
+    document.getElementById("icloud-widget-report-devices")?.addEventListener("click", () => openIcloudView("sb-export-devices-pdf"));
+    document.getElementById("icloud-widget-report-assets")?.addEventListener("click", () => openIcloudView("sb-export-assets-pdf"));
+    document.getElementById("icloud-widget-settings")?.addEventListener("click", () => openIcloudView("sb-settings"));
+
+    backBtn.addEventListener("click", () => {
+      gsap.to([viewContainer, backBtn], {
+        duration: 0.3,
+        opacity: 0,
+        y: 10,
+        ease: "power2.in",
+        onComplete: () => {
+          viewContainer.classList.add("hidden");
+          backBtn.classList.add("hidden");
+          dashboard.classList.remove("hidden");
+          gsap.fromTo(dashboard, 
+            { opacity: 0, scale: 0.95 }, 
+            { opacity: 1, scale: 1, duration: 0.5, ease: "power2.out" }
+          );
+        }
+      });
+    });
+  });
+</script>
 </body>
 </html>
+
+
+

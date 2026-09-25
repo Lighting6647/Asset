@@ -1953,3 +1953,104 @@ button.stat-card { width: 100%; color: inherit; font: inherit; text-align: left;
   gap: 0.75rem;
   margin-top: 1rem;
 }
+
+/* ==================== ICLOUD REDESIGN ==================== */
+body {
+  background: linear-gradient(135deg, #0052d4, #4364f7, #6fb1fc) !important;
+  background-attachment: fixed !important;
+  font-family: -apple-system, BlinkMacSystemFont, "San Francisco", "Helvetica Neue", sans-serif;
+}
+.sidebar { display: none !important; }
+.dashboard-layout { grid-template-columns: 1fr !important; }
+.main-content { margin-left: 0 !important; padding-top: 2rem; background: transparent; }
+.background-effects { display: none !important; } /* Hide old orbs */
+
+.icloud-dashboard-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto 3rem auto;
+  padding: 0 2rem;
+}
+
+.icloud-widget {
+  background: rgba(30, 35, 50, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 1.5rem;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  color: #fff;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.icloud-widget:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+  background: rgba(40, 45, 60, 0.75);
+}
+
+.icloud-widget.span-2 {
+  grid-column: span 2;
+}
+
+@media (max-width: 768px) {
+  .icloud-widget.span-2 { grid-column: span 1; }
+  .icloud-dashboard-container { padding: 0 1rem; gap: 1rem; }
+}
+
+.widget-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  margin-bottom: 1rem;
+}
+
+.widget-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+.widget-header h3 { margin: 0; font-size: 1.2rem; font-weight: 600; }
+.widget-action { color: #fff; opacity: 0.7; }
+.widget-content { font-size: 0.9rem; color: rgba(255,255,255,0.8); line-height: 1.5; }
+
+/* Profile Widget */
+.profile-widget { text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(10, 20, 40, 0.8); }
+.profile-img { width: 80px; height: 80px; border-radius: 50%; background: #4364f7; display: flex; align-items: center; justify-content: center; font-size: 32px; margin-bottom: 1rem; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+.profile-widget h3 { margin: 0 0 0.25rem 0; font-size: 1.5rem; }
+.profile-widget p { margin: 0 0 0.5rem 0; opacity: 0.7; font-size: 0.9rem; }
+.profile-badge { background: #6366f1; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: bold; }
+
+/* App Grid Widget */
+.app-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1rem; }
+.app-icon { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
+.app-icon-bg { width: 50px; height: 50px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+.app-icon span { font-size: 0.8rem; font-weight: 500; }
+
+.view-section-overlay {
+  background: rgba(15, 20, 30, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 20px;
+  padding: 2rem;
+  border: 1px solid rgba(255,255,255,0.1);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+/* Override existing panels */
+.glass-card { background: rgba(30, 35, 50, 0.5) !important; border: 1px solid rgba(255,255,255,0.05) !important; }
+
+
+.dashboard-header { display: none !important; }
+
