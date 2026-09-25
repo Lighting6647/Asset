@@ -137,7 +137,7 @@
           <span style="font-size:18px;">?</span>
         </div>
       </div>
-      <!-- ICLOUD DASHBOARD (EXACT REPLICA 3) -->
+      <!-- ICLOUD DASHBOARD (EXACT REPLICA 4 - FUNCTIONAL) -->
       <div id="icloud-dashboard" class="icloud-grid-exact">
         
         <!-- 1. Profile (1x1) -->
@@ -145,90 +145,65 @@
           <div class="profile-bg-cloud"></div>
           <div class="profile-avatar-wrapper-new">
             <div class="profile-avatar-circle-new">
-              <img src="https://ui-avatars.com/api/?name=Ampol&background=102035&color=fff&size=120" alt="Ampol" style="width:100%; height:100%; border-radius:50%; object-fit:cover;" />
+              <img src="https://ui-avatars.com/api/?name=Admin&background=102035&color=fff&size=120" alt="Admin" style="width:100%; height:100%; border-radius:50%; object-fit:cover;" />
             </div>
           </div>
           <div class="profile-info" style="position:relative; z-index:2;">
-            <h2>Ampol</h2>
-            <p>lighting.sp@hotmail.com</p>
-            <strong>iCloud+</strong>
+            <h2 id="widget-profile-name">ผู้ดูแลระบบ</h2>
+            <p id="widget-profile-email">admin@ios-monitor.local</p>
+            <strong>Asset Management</strong>
           </div>
         </div>
 
-        <!-- 2. Photos (2x1) -->
+        <!-- 2. Dashboard (2x1) -->
         <div class="icloud-card-exact grid-2x1 exact-photos" id="icloud-widget-dashboard">
           <div class="exact-header">
             <div class="exact-header-left">
               <div class="exact-header-icon" style="background: conic-gradient(#ff3b30, #ffcc00, #4cd964, #5ac8fa, #007aff, #5856d6, #ff2d55);"></div>
               <div class="exact-header-text">
-                <h3 class="exact-title">รูปภาพ</h3>
-                <span class="exact-subtitle">คลัง • รูปภาพ 0 รายการ</span>
+                <h3 class="exact-title">ภาพรวมระบบ</h3>
+                <span class="exact-subtitle" id="widget-dashboard-subtitle">ข้อมูล • ทรัพย์สิน 0 รายการ</span>
               </div>
             </div>
           </div>
           <div class="exact-body">
-            <span>รูปภาพ 0 รายการ</span>
+            <span id="widget-dashboard-count">ระบบพร้อมทำงาน</span>
           </div>
           <div class="bottom-dots" style="left:12px; bottom:12px;">...</div>
         </div>
 
-        <!-- 3. Mail/Alerts (2x1) -->
+        <!-- 3. Alerts (2x1) -->
         <div class="icloud-card-exact grid-2x1 exact-mail" id="icloud-widget-alerts">
           <div class="exact-header">
             <div class="exact-header-left">
               <div class="exact-header-icon" style="background: linear-gradient(180deg, #5ac8fa, #007aff);">??</div>
               <div class="exact-header-text">
-                <h3 class="exact-title">เมล</h3>
-                <span class="exact-subtitle">กล่องเมลเข้า - ไม่มีข้อความที่ไม่ได้อ่าน</span>
+                <h3 class="exact-title">การแจ้งเตือน</h3>
+                <span class="exact-subtitle">กล่องข้อความ - สถานะอุปกรณ์และระบบ</span>
               </div>
             </div>
             <div class="exact-action-icon">??</div>
           </div>
-          <div class="exact-body">
+          <div class="exact-body" id="widget-alerts-container">
             <div class="mail-col">
               <div class="mail-item">
                 <div class="mail-item-header">
-                  <h4>Mail Delivery System</h4>
-                  <span>10/6/69</span>
+                  <h4>System Ready</h4>
+                  <span>วันนี้</span>
                 </div>
-                <p>Undelivered Mail Returned to Sender</p>
+                <p>ระบบพร้อมใช้งาน และเชื่อมต่อฐานข้อมูลแล้ว</p>
               </div>
               <div class="mail-item">
                 <div class="mail-item-header">
-                  <h4>Ekasak Chitcharoen</h4>
-                  <span>7/6/69</span>
+                  <h4>No pending alerts</h4>
+                  <span>-</span>
                 </div>
-                <p>สมัคร senior IT</p>
-              </div>
-              <div class="mail-item" style="border:none;">
-                <div class="mail-item-header">
-                  <h4>secureOTP@krungsricard.c...</h4>
-                  <span>22/9/67</span>
-                </div>
-                <p>HomePro Visa รหัสเพื่อยืนยันการสมัครบัตร</p>
+                <p>ไม่มีรายการแจ้งเตือนที่ต้องดำเนินการ</p>
               </div>
             </div>
             <div class="mail-col" style="border-left: 1px solid rgba(255,255,255,0.05); padding-left: 20px;">
-              <div class="mail-item">
-                <div class="mail-item-header">
-                  <h4>Kerry Express Call Center</h4>
-                  <span>7/6/61</span>
-                </div>
-                <p>Mobile tracking: OFM030K000998</p>
-              </div>
-              <div class="mail-item">
-                <div class="mail-item-header">
-                  <h4>postmaster@mac.com</h4>
-                  <span>3/4/61</span>
-                </div>
-                <p>Delivery Notification: Delivery has failed</p>
-              </div>
               <div class="mail-item" style="border:none;">
-                <div class="mail-item-header">
-                  <h4>postmaster@mac.com</h4>
-                  <span>2/4/61</span>
-                </div>
-                <p>Delivery Notification: Delivery has failed</p>
+                <p style="margin-top:20px; text-align:center; color:rgba(255,255,255,0.3);">ไม่มีข้อมูลเพิ่มเติม</p>
               </div>
             </div>
           </div>
@@ -236,13 +211,13 @@
           <div class="bottom-right-action" style="font-size:16px;">?</div>
         </div>
 
-        <!-- 4. Drive (1x1) -->
+        <!-- 4. Reports (1x1) -->
         <div class="icloud-card-exact grid-1x1 exact-drive" id="icloud-widget-report-devices">
           <div class="exact-header">
             <div class="exact-header-left">
               <div class="exact-header-icon" style="background: linear-gradient(180deg, #5ac8fa, #007aff);">??</div>
               <div class="exact-header-text">
-                <h3 class="exact-title">Drive</h3>
+                <h3 class="exact-title">รายงาน PDF</h3>
                 <span class="exact-subtitle">รายการล่าสุด</span>
               </div>
             </div>
@@ -251,22 +226,15 @@
             <div class="drive-item">
               <div class="drive-item-icon">??</div>
               <div class="drive-item-info">
-                <h4>หนังสือรับรองการทำงาน</h4>
-                <p>PDF</p>
+                <h4>รายงานอุปกรณ์.pdf</h4>
+                <p>PDF Export</p>
               </div>
             </div>
-            <div class="drive-item">
+            <div class="drive-item" id="icloud-widget-report-assets">
               <div class="drive-item-icon">??</div>
               <div class="drive-item-info">
-                <h4>1803002 (1)</h4>
-                <p>PDF</p>
-              </div>
-            </div>
-            <div class="drive-item">
-              <div class="drive-item-icon">??</div>
-              <div class="drive-item-info">
-                <h4>หนังสือรับสภาพหนี้</h4>
-                <p>PDF</p>
+                <h4>รายงานทรัพย์สิน.pdf</h4>
+                <p>PDF Export</p>
               </div>
             </div>
           </div>
@@ -275,95 +243,86 @@
 
         <!-- 5. App Launcher (1x1) -->
         <div class="icloud-card-exact grid-1x1 exact-launcher">
-          <div class="launcher-icon">
+          <div class="launcher-icon" id="icloud-widget-alerts-btn">
             <div class="launcher-icon-bg" style="background: linear-gradient(180deg, #5ac8fa, #007aff);">??</div>
-            <span>เมล</span>
+            <span>แจ้งเตือน</span>
           </div>
-          <div class="launcher-icon">
+          <div class="launcher-icon" id="icloud-widget-assets">
             <div class="launcher-icon-bg" style="background: #8e8e93;">??</div>
-            <span>รายชื่อ</span>
+            <span>ทรัพย์สิน</span>
           </div>
-          <div class="launcher-icon">
-            <div class="launcher-icon-bg" style="background: #fff; color: #ff3b30; font-weight: bold;">25</div>
-            <span>ปฏิทิน</span>
+          <div class="launcher-icon" id="icloud-widget-scan">
+            <div class="launcher-icon-bg" style="background: #fff; color: #ff3b30; font-weight: bold;">??</div>
+            <span>สแกน QR</span>
           </div>
-          <div class="launcher-icon">
+          <div class="launcher-icon" id="icloud-widget-dashboard-btn">
             <div class="launcher-icon-bg" style="background: conic-gradient(#ff3b30, #ffcc00, #4cd964, #5ac8fa, #007aff, #5856d6, #ff2d55);"></div>
-            <span>รูปภาพ</span>
+            <span>ภาพรวม</span>
           </div>
-          <div class="launcher-icon">
+          <div class="launcher-icon" id="icloud-widget-log">
             <div class="launcher-icon-bg" style="background: linear-gradient(180deg, #5ac8fa, #007aff);">??</div>
-            <span>Drive</span>
+            <span>ประวัติ</span>
           </div>
-          <div class="launcher-icon">
+          <div class="launcher-icon" id="icloud-widget-analytics">
             <div class="launcher-icon-bg" style="background: #ffcc00;">??</div>
-            <span>โน้ต</span>
+            <span>วิเคราะห์</span>
           </div>
           <div class="launcher-icon">
             <div class="launcher-icon-bg" style="background: #fff; color:#000;">??</div>
-            <span>เตือนความ...</span>
+            <span>ตั้งค่า</span>
           </div>
           <div class="launcher-icon">
             <div class="launcher-icon-bg" style="background: #fff; color:#ff9500;">?</div>
-            <span>คำเชิญ</span>
+            <span>รายการโปรด</span>
           </div>
           <div class="launcher-icon">
             <div class="launcher-icon-bg" style="background: #ff9500;">??</div>
-            <span>Pages</span>
+            <span>บันทึก</span>
           </div>
           <div class="launcher-icon">
             <div class="launcher-icon-bg" style="background: #34c759;">??</div>
-            <span>Numbers</span>
+            <span>สถิติ</span>
           </div>
           <div class="launcher-icon">
             <div class="launcher-icon-bg" style="background: #007aff;">???</div>
-            <span>Keynote</span>
+            <span>พรีเซนต์</span>
           </div>
           <div class="launcher-icon">
             <div class="launcher-icon-bg" style="background: conic-gradient(#34c759, #4cd964);">??</div>
-            <span>ค้นหาของ...</span>
+            <span>ติดตาม</span>
           </div>
         </div>
 
-        <!-- 6. Notes (2x1) -->
-        <div class="icloud-card-exact grid-2x1 exact-notes">
+        <!-- 6. Logs/Notes (2x1) -->
+        <div class="icloud-card-exact grid-2x1 exact-notes" id="icloud-widget-log-card">
           <div class="exact-header">
             <div class="exact-header-left">
               <div class="exact-header-icon" style="background: #ffcc00;">??</div>
               <div class="exact-header-text">
-                <h3 class="exact-title">โน้ต</h3>
-                <span class="exact-subtitle">iCloud ทั้งหมด</span>
+                <h3 class="exact-title">บันทึกประวัติ</h3>
+                <span class="exact-subtitle">การเคลื่อนไหวล่าสุดในระบบ</span>
               </div>
             </div>
             <div class="exact-action-icon">??</div>
           </div>
-          <div class="exact-body">
+          <div class="exact-body" id="widget-logs-container">
             <div class="notes-col">
               <div class="note-item">
-                <h4>รายการใช้จ่ายรายเดือน</h4>
-                <p>31/8/69 จ่ายค่าโทรศัพท์ iphone -14000...</p>
+                <h4>System Update</h4>
+                <p>ปรับปรุงโครงสร้างหน้า Dashboard เป็น iCloud UI</p>
               </div>
               <div class="note-item">
-                <h4>ใส่ซอง คืน</h4>
-                <p>18/3/69 ส่งให้ 1000</p>
+                <h4>Database Sync</h4>
+                <p>เชื่อมต่อฐานข้อมูล JSONBin สำเร็จ</p>
               </div>
               <div class="note-item" style="border:none;">
-                <h4>Scan</h4>
-                <p>3/11/67 ไม่มีข้อความเพิ่มเติม</p>
+                <h4>Admin Login</h4>
+                <p>เข้าสู่ระบบสำเร็จ</p>
               </div>
             </div>
             <div class="notes-col" style="border-left: 1px solid rgba(255,255,255,0.05); padding-left: 20px;">
               <div class="note-item">
-                <h4>เอกสารต่างๆ</h4>
-                <p>18/9/68 ไม่มีข้อความเพิ่มเติม</p>
-              </div>
-              <div class="note-item">
-                <h4>ที่อยู่</h4>
-                <p>3/9/68 หมู่บ้าน พฤกษาวิลล์ 41/1 ช.14</p>
-              </div>
-              <div class="note-item" style="border:none;">
-                <h4>ค่างวด</h4>
-                <p>1/11/65 ยอดจัด 564000*4.99%= 28,143.6</p>
+                <p style="margin-top:20px; text-align:center; color:rgba(255,255,255,0.3);">ไม่มีประวัติการทำรายการอุปกรณ์ล่าสุด</p>
               </div>
             </div>
           </div>
@@ -1099,6 +1058,7 @@
 </script>
 </body>
 </html>
+
 
 
 

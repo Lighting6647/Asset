@@ -2701,3 +2701,80 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
 });
+function updateICloudDashboardData() {
+  const devices = window.devicesData || [];
+  const assets = window.assetsData || [];
+  const logs = window.logsData || [];
+  
+  const dbCount = document.getElementById('widget-dashboard-count');
+  const dbSubtitle = document.getElementById('widget-dashboard-subtitle');
+  if (dbCount && dbSubtitle) {
+    dbSubtitle.innerText = 'ข้อมูล • อุปกรณ์ ' + devices.length + ' รายการ';
+    dbCount.innerHTML = '<div style="font-size:24px; color:#fff; font-weight:600;">ทรัพย์สินรวม ' + assets.length + ' รายการ</div>';
+  }
+
+  const alertsContainer = document.getElementById('widget-alerts-container');
+  if (alertsContainer) {
+    const today = new Date();
+    const nearCycle = devices.filter(d => {
+      if(!d.verifyCycle || !d.lastVerified) return false;
+      const last = new Date(d.lastVerified);
+      const diff = Math.floor((today - last) / (1000 * 60 * 60 * 24));
+      return diff >= (d.verifyCycle - 3);
+    });
+
+    let html = '<div class="mail-col">';
+    if (nearCycle.length === 0) {
+      html += '<div class="mail-item"><div class="mail-item-header"><h4>System Ready</h4><span>วันนี้</span></div><p>ไม่มีอุปกรณ์ที่ต้องตรวจสอบเร็วๆนี้</p></div>';
+    } else {
+      nearCycle.slice(0,3).forEach(d => {
+        html += '<div class="mail-item"><div class="mail-item-header"><h4>'+d.name+'</h4><span>แจ้งเตือน</span></div><p>ถึงกำหนดตรวจสอบ (รอบ '+d.verifyCycle+' วัน)</p></div>';
+      });
+    }
+    html += '</div><div class="mail-col" style="border-left: 1px solid rgba(255,255,255,0.05); padding-left: 20px;">';
+    html += '<div class="mail-item" style="border:none;"><p style="margin-top:20px; text-align:center; color:rgba(255,255,255,0.3);">การแจ้งเตือนทั้งหมด</p></div></div>';
+    alertsContainer.innerHTML = html;
+  }
+
+  const logsContainer = document.getElementById('widget-logs-container');
+  if (logsContainer) {
+    let html = '<div class="notes-col">';
+    if (logs.length === 0) {
+      html += '<div class="note-item"><h4>System</h4><p>ไม่มีประวัติการทำรายการ</p></div>';
+    } else {
+      logs.slice(0,3).forEach(l => {
+        html += '<div class="note-item"><h4>'+(l.action||'Action')+'</h4><p>'+new Date(l.timestamp).toLocaleDateString()+' - '+(l.details||'')+'</p></div>';
+      });
+    }
+    html += '</div><div class="notes-col" style="border-left: 1px solid rgba(255,255,255,0.05); padding-left: 20px;">';
+    html += '<div class="note-item"><p style="margin-top:20px; text-align:center; color:rgba(255,255,255,0.3);">ไม่มีข้อมูลเพิ่มเติม</p></div></div>';
+    logsContainer.innerHTML = html;
+  }
+}
+
+const originalRenderAssets = window.renderAssets;
+if(typeof window.renderAssets === 'function') {
+  window.renderAssets = function(data) {
+    window.assetsData = data;
+    originalRenderAssets(data);
+    updateICloudDashboardData();
+  };
+}
+
+const originalRenderDevices = window.renderDevices;
+if(typeof window.renderDevices === 'function') {
+  window.renderDevices = function(data) {
+    window.devicesData = data;
+    originalRenderDevices(data);
+    updateICloudDashboardData();
+  };
+}
+
+const originalRenderLogs = window.renderLogs;
+if(typeof window.renderLogs === 'function') {
+  window.renderLogs = function(data) {
+    window.logsData = data;
+    originalRenderLogs(data);
+    updateICloudDashboardData();
+  };
+}
