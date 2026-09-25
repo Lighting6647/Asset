@@ -138,111 +138,192 @@
         </div>
       </div>
       <!-- ICLOUD DASHBOARD (EXACT REPLICA) -->
-      <div id="icloud-dashboard" class="icloud-grid">
-        <!-- 1. Profile (Large Square) -->
-        <div class="icloud-card profile-card" id="icloud-widget-settings">
-          <div class="profile-avatar-wrapper">
-            <div class="profile-avatar">
-              <img src="https://ui-avatars.com/api/?name=Admin&background=0052d4&color=fff&size=120" alt="Admin" />
-            </div>
+      <div id="icloud-dashboard" class="icloud-grid-exact">
+        
+        <!-- 1. Profile (1x1) -->
+        <div class="icloud-card-exact grid-1x1 exact-profile" id="icloud-widget-settings">
+          <div class="profile-avatar-circle">
+            <img src="https://ui-avatars.com/api/?name=Admin&background=102035&color=fff&size=120" alt="Admin" />
           </div>
-          <div class="profile-details">
+          <div class="profile-info">
             <h2>Admin</h2>
             <p>admin@ios-monitor.local</p>
-            <span class="icloud-plus">Asset+</span>
+            <strong>Asset+</strong>
           </div>
         </div>
 
-        <!-- 2. Devices (Large Rectangle - like Photos/Map) -->
-        <div class="icloud-card devices-card" id="icloud-widget-dashboard">
-          <div class="card-header">
-            <div class="header-left">
-              <img src="https://cdn-icons-png.flaticon.com/512/0/74.png" style="filter: invert(1); width: 20px; height: 20px; margin-right: 8px;">
-              <span>แดชบอร์ดอุปกรณ์</span>
+        <!-- 2. Photos/Dashboard (2x1) -->
+        <div class="icloud-card-exact grid-2x1 exact-photos" id="icloud-widget-dashboard">
+          <div class="exact-header">
+            <div class="exact-header-left">
+              <div class="exact-header-icon" style="background: conic-gradient(#ff3b30, #ffcc00, #4cd964, #5ac8fa, #007aff, #5856d6, #ff2d55);"></div>
+              <div class="exact-header-text">
+                <h3 class="exact-title">รูปภาพ</h3>
+                <span class="exact-subtitle">คลัง - รูปภาพ 0 รายการ</span>
+              </div>
             </div>
           </div>
-          <div class="devices-map-preview">
-            <span>ภาพรวมอุปกรณ์ 0 รายการ</span>
+          <div class="exact-body">
+            <span>รูปภาพ 0 รายการ</span>
           </div>
+          <div class="bottom-dots">...</div>
         </div>
 
-        <!-- 3. Alerts (Wide Rectangle - like Mail) -->
-        <div class="icloud-card mail-card" id="icloud-widget-alerts">
-          <div class="card-header">
-            <div class="header-left">
-              <div class="app-icon-small mail-icon">??</div>
-              <span>ศูนย์แจ้งเตือน</span>
-              <span class="sub-header">• ไม่มีแจ้งเตือนใหม่</span>
+        <!-- 3. Mail/Alerts (2x1) -->
+        <div class="icloud-card-exact grid-2x1 exact-mail" id="icloud-widget-alerts">
+          <div class="exact-header">
+            <div class="exact-header-left">
+              <div class="exact-header-icon" style="background: linear-gradient(180deg, #5ac8fa, #007aff);">??</div>
+              <div class="exact-header-text">
+                <h3 class="exact-title">เมล</h3>
+                <span class="exact-subtitle">กล่องเมลเข้า - ไม่มีข้อความที่ไม่ได้อ่าน</span>
+              </div>
             </div>
-            <div class="header-right">
-              <span>+</span>
+            <div class="exact-action-icon">??</div>
+          </div>
+          <div class="exact-body">
+            <div class="mail-col">
+              <div class="mail-item">
+                <div class="mail-item-header">
+                  <h4>Mail Delivery System</h4>
+                  <span>10/6/69</span>
+                </div>
+                <p>Undelivered Mail Returned to Sender</p>
+              </div>
+              <div class="mail-item">
+                <div class="mail-item-header">
+                  <h4>Ekasak Chitcharoen</h4>
+                  <span>7/6/69</span>
+                </div>
+                <p>สมัคร senior IT</p>
+              </div>
+            </div>
+            <div class="mail-col">
+              <div class="mail-item">
+                <div class="mail-item-header">
+                  <h4>Kerry Express Call Center</h4>
+                  <span>7/6/61</span>
+                </div>
+                <p>Mobile tracking: OFM030K000998</p>
+              </div>
+              <div class="mail-item">
+                <div class="mail-item-header">
+                  <h4>postmaster@mac.com</h4>
+                  <span>3/4/61</span>
+                </div>
+                <p>Delivery Notification: Delivery has failed</p>
+              </div>
             </div>
           </div>
-          <div class="mail-list">
-            <div class="mail-item">
-              <div class="mail-info">
-                <h4>System Status</h4>
-                <p>ระบบทำงานปกติ</p>
-              </div>
-              <span class="mail-date">วันนี้</span>
-            </div>
-            <div class="mail-item">
-              <div class="mail-info">
-                <h4>Update Pending</h4>
-                <p>รอการตรวจสอบอุปกรณ์</p>
-              </div>
-              <span class="mail-date">เมื่อวาน</span>
-            </div>
-          </div>
+          <div class="bottom-dots">...</div>
+          <div class="bottom-right-action">?</div>
         </div>
 
-        <!-- 4. Reports (Square - like Drive) -->
-        <div class="icloud-card drive-card" id="icloud-widget-report-devices">
-          <div class="card-header">
-            <div class="header-left">
-              <div class="app-icon-small drive-icon">??</div>
-              <div style="display:flex; flex-direction:column;">
-                <span>รายงาน</span>
-                <span class="sub-header" style="margin-left:0; font-size:10px;">รายการล่าสุด</span>
+        <!-- 4. Drive/Reports (1x1) -->
+        <div class="icloud-card-exact grid-1x1 exact-drive" id="icloud-widget-report-devices">
+          <div class="exact-header">
+            <div class="exact-header-left">
+              <div class="exact-header-icon" style="background: linear-gradient(180deg, #5ac8fa, #007aff);">??</div>
+              <div class="exact-header-text">
+                <h3 class="exact-title">Drive</h3>
+                <span class="exact-subtitle">รายการล่าสุด</span>
               </div>
             </div>
           </div>
-          <div class="drive-list">
+          <div class="exact-body">
             <div class="drive-item">
-              <span class="pdf-icon">??</span>
-              <div class="drive-info">
-                <h4>รายงานอุปกรณ์.pdf</h4>
+              <div class="drive-item-icon">??</div>
+              <div class="drive-item-info">
+                <h4>หนังสือรับรองการทำงาน</h4>
                 <p>PDF</p>
               </div>
             </div>
             <div class="drive-item" id="icloud-widget-report-assets">
-              <span class="pdf-icon">??</span>
-              <div class="drive-info">
-                <h4>รายงานทรัพย์สิน.pdf</h4>
+              <div class="drive-item-icon">??</div>
+              <div class="drive-item-info">
+                <h4>1803002 (1)</h4>
+                <p>PDF</p>
+              </div>
+            </div>
+            <div class="drive-item">
+              <div class="drive-item-icon">??</div>
+              <div class="drive-item-info">
+                <h4>หนังสือรับสภาพหนี้</h4>
                 <p>PDF</p>
               </div>
             </div>
           </div>
+          <div class="bottom-dots">...</div>
         </div>
 
-        <!-- 5. App Launcher (Square) -->
-        <div class="icloud-card launcher-card">
-          <div class="launcher-grid">
-            <div class="launcher-item" id="icloud-widget-assets">
-              <div class="launcher-icon" style="background: linear-gradient(180deg, #ff9500, #ff5e3a);">??</div>
-              <span>ทรัพย์สิน</span>
+        <!-- 5. App Launcher (1x1) -->
+        <div class="icloud-card-exact grid-1x1 exact-launcher">
+          <div class="launcher-icon" id="icloud-widget-alerts-btn">
+            <div class="launcher-icon-bg" style="background: linear-gradient(180deg, #5ac8fa, #007aff);">??</div>
+            <span>เมล</span>
+          </div>
+          <div class="launcher-icon" id="icloud-widget-profile">
+            <div class="launcher-icon-bg" style="background: #8e8e93;">??</div>
+            <span>รายชื่อ</span>
+          </div>
+          <div class="launcher-icon">
+            <div class="launcher-icon-bg" style="background: #fff; color: #ff3b30; font-weight: bold;">25</div>
+            <span>ปฏิทิน</span>
+          </div>
+          <div class="launcher-icon" id="icloud-widget-assets">
+            <div class="launcher-icon-bg" style="background: conic-gradient(#ff3b30, #ffcc00, #4cd964, #5ac8fa, #007aff, #5856d6, #ff2d55);"></div>
+            <span>รูปภาพ</span>
+          </div>
+          <div class="launcher-icon" id="icloud-widget-dashboard-btn">
+            <div class="launcher-icon-bg" style="background: linear-gradient(180deg, #5ac8fa, #007aff);">??</div>
+            <span>Drive</span>
+          </div>
+          <div class="launcher-icon" id="icloud-widget-analytics">
+            <div class="launcher-icon-bg" style="background: #ffcc00;">??</div>
+            <span>โน้ต</span>
+          </div>
+          <div class="launcher-icon" id="icloud-widget-log">
+            <div class="launcher-icon-bg" style="background: #fff; color:#000;">??</div>
+            <span>เตือนความ...</span>
+          </div>
+          <div class="launcher-icon" id="icloud-widget-scan">
+            <div class="launcher-icon-bg" style="background: #fff; color:#ff9500;">?</div>
+            <span>คำเชิญ</span>
+          </div>
+        </div>
+
+        <!-- 6. Notes (2x1) -->
+        <div class="icloud-card-exact grid-2x1 exact-notes">
+          <div class="exact-header">
+            <div class="exact-header-left">
+              <div class="exact-header-icon" style="background: #ffcc00;">??</div>
+              <div class="exact-header-text">
+                <h3 class="exact-title">โน้ต</h3>
+                <span class="exact-subtitle">iCloud ทั้งหมด</span>
+              </div>
             </div>
-            <div class="launcher-item" id="icloud-widget-scan">
-              <div class="launcher-icon" style="background: linear-gradient(180deg, #5856d6, #3b3a98);">??</div>
-              <span>สแกน QR</span>
+            <div class="exact-action-icon">??</div>
+          </div>
+          <div class="exact-body">
+            <div class="notes-col">
+              <div class="note-item">
+                <h4>รายการใช้จ่ายรายเดือน</h4>
+                <p>31/8/69 จ่ายค่าโทรศัพท์ iphone -14000...</p>
+              </div>
+              <div class="note-item">
+                <h4>ใส่ซอง คืน</h4>
+                <p>18/3/60 ส่งให้ 1000</p>
+              </div>
             </div>
-            <div class="launcher-item" id="icloud-widget-log">
-              <div class="launcher-icon" style="background: linear-gradient(180deg, #ffcc00, #ff9500);">??</div>
-              <span>ประวัติ</span>
-            </div>
-            <div class="launcher-item" id="icloud-widget-analytics">
-              <div class="launcher-icon" style="background: linear-gradient(180deg, #34c759, #28a745);">??</div>
-              <span>วิเคราะห์</span>
+            <div class="notes-col">
+              <div class="note-item">
+                <h4>เอกสารต่างๆ</h4>
+                <p>18/9/68 ไม่มีข้อความเพิ่มเติม</p>
+              </div>
+              <div class="note-item">
+                <h4>ที่อยู่</h4>
+                <p>3/9/68 หมู่บ้าน พฤกษา...</p>
+              </div>
             </div>
           </div>
         </div>
@@ -976,6 +1057,7 @@
 </script>
 </body>
 </html>
+
 
 
 
