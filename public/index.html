@@ -126,77 +126,127 @@
         <button id="btn-show-scan-asset" class="btn hidden" style="flex: 1; min-width: 200px; padding: 0.75rem; font-size: 1rem; background: var(--accent-indigo); color: white; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);">๐“ท เธชเนเธเธ QR (Scan Asset)</button>
       </div>
 
-      <!-- ICLOUD DASHBOARD -->
-      <div id="icloud-dashboard" class="icloud-dashboard-container">
-        <!-- Profile -->
-        <div class="icloud-widget profile-widget" id="icloud-widget-settings">
-          <div class="profile-img">?????</div>
-          <h3>Admin</h3>
-          <p>admin@ios-monitor.local</p>
-          <span class="profile-badge">Asset+</span>
+      <!-- ICLOUD TOPBAR -->
+      <div class="icloud-topbar" style="display: flex; justify-content: space-between; align-items: center; padding: 16px 32px; background: rgba(0,0,0,0.2); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); margin-top: -40px; margin-left: -20px; margin-right: -20px; margin-bottom: 40px; border-bottom: 1px solid rgba(255,255,255,0.05);">
+        <div style="font-size: 20px; font-weight: 500; display: flex; align-items: center; gap: 8px;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.5 19C19.9853 19 22 16.9853 22 14.5C22 12.1332 20.1764 10.1983 17.8687 10.0166C17.3773 6.62149 14.4532 4 11 4C7.13401 4 4 7.13401 4 11C4 11.2384 4.01192 11.4741 4.03503 11.7066C2.28588 12.3929 1 14.0487 1 16C1 18.2091 2.79086 20 5 20H17.5V19Z"></path></svg>
+          Asset Cloud
         </div>
-        
-        <!-- Alerts / Backlog (Mail-style) -->
-        <div class="icloud-widget span-2" id="icloud-widget-alerts">
-          <div class="widget-header">
-            <div class="widget-icon" style="background: linear-gradient(135deg, #007aff, #0052d4);">??</div>
-            <span class="widget-action">??</span>
-          </div>
-          <div class="widget-header">
-            <h3>ศูนย์แจ้งเตือน (Alerts)</h3>
-            <span id="widget-alert-count">กำลังโหลด...</span>
-          </div>
-          <div class="widget-content">
-            <p>รายการที่ต้องดำเนินการจากข้อมูลล่าสุด หรือรายการค้างในระบบ</p>
-          </div>
+        <div style="display: flex; gap: 16px; opacity: 0.7;">
+          <span style="font-size:18px;">+</span>
+          <span style="font-size:18px;">?</span>
         </div>
-
-        <!-- Dashboard (Drive-style) -->
-        <div class="icloud-widget span-2" id="icloud-widget-dashboard">
-          <div class="widget-header">
-            <div class="widget-icon" style="background: linear-gradient(135deg, #34c759, #30b653);">??</div>
-            <span class="widget-action">??</span>
+      </div>
+      <!-- ICLOUD DASHBOARD (EXACT REPLICA) -->
+      <div id="icloud-dashboard" class="icloud-grid">
+        <!-- 1. Profile (Large Square) -->
+        <div class="icloud-card profile-card" id="icloud-widget-settings">
+          <div class="profile-avatar-wrapper">
+            <div class="profile-avatar">
+              <img src="https://ui-avatars.com/api/?name=Admin&background=0052d4&color=fff&size=120" alt="Admin" />
+            </div>
           </div>
-          <div class="widget-header">
-            <h3>แดชบอร์ดอุปกรณ์</h3>
-            <span>รายการล่าสุด</span>
-          </div>
-          <div class="widget-content">
-            <p>จัดการอุปกรณ์ iOS ที่ลงทะเบียนและตรวจสอบสถานะ</p>
+          <div class="profile-details">
+            <h2>Admin</h2>
+            <p>admin@ios-monitor.local</p>
+            <span class="icloud-plus">Asset+</span>
           </div>
         </div>
 
-        <!-- Apps Grid (Photos/Apps-style) -->
-        <div class="icloud-widget">
-          <div class="app-grid">
-            <div class="app-icon" id="icloud-widget-assets">
-              <div class="app-icon-bg" style="background: linear-gradient(135deg, #ff9500, #ff5e3a);">??</div>
+        <!-- 2. Devices (Large Rectangle - like Photos/Map) -->
+        <div class="icloud-card devices-card" id="icloud-widget-dashboard">
+          <div class="card-header">
+            <div class="header-left">
+              <img src="https://cdn-icons-png.flaticon.com/512/0/74.png" style="filter: invert(1); width: 20px; height: 20px; margin-right: 8px;">
+              <span>แดชบอร์ดอุปกรณ์</span>
+            </div>
+          </div>
+          <div class="devices-map-preview">
+            <span>ภาพรวมอุปกรณ์ 0 รายการ</span>
+          </div>
+        </div>
+
+        <!-- 3. Alerts (Wide Rectangle - like Mail) -->
+        <div class="icloud-card mail-card" id="icloud-widget-alerts">
+          <div class="card-header">
+            <div class="header-left">
+              <div class="app-icon-small mail-icon">??</div>
+              <span>ศูนย์แจ้งเตือน</span>
+              <span class="sub-header">• ไม่มีแจ้งเตือนใหม่</span>
+            </div>
+            <div class="header-right">
+              <span>+</span>
+            </div>
+          </div>
+          <div class="mail-list">
+            <div class="mail-item">
+              <div class="mail-info">
+                <h4>System Status</h4>
+                <p>ระบบทำงานปกติ</p>
+              </div>
+              <span class="mail-date">วันนี้</span>
+            </div>
+            <div class="mail-item">
+              <div class="mail-info">
+                <h4>Update Pending</h4>
+                <p>รอการตรวจสอบอุปกรณ์</p>
+              </div>
+              <span class="mail-date">เมื่อวาน</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. Reports (Square - like Drive) -->
+        <div class="icloud-card drive-card" id="icloud-widget-report-devices">
+          <div class="card-header">
+            <div class="header-left">
+              <div class="app-icon-small drive-icon">??</div>
+              <div style="display:flex; flex-direction:column;">
+                <span>รายงาน</span>
+                <span class="sub-header" style="margin-left:0; font-size:10px;">รายการล่าสุด</span>
+              </div>
+            </div>
+          </div>
+          <div class="drive-list">
+            <div class="drive-item">
+              <span class="pdf-icon">??</span>
+              <div class="drive-info">
+                <h4>รายงานอุปกรณ์.pdf</h4>
+                <p>PDF</p>
+              </div>
+            </div>
+            <div class="drive-item" id="icloud-widget-report-assets">
+              <span class="pdf-icon">??</span>
+              <div class="drive-info">
+                <h4>รายงานทรัพย์สิน.pdf</h4>
+                <p>PDF</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. App Launcher (Square) -->
+        <div class="icloud-card launcher-card">
+          <div class="launcher-grid">
+            <div class="launcher-item" id="icloud-widget-assets">
+              <div class="launcher-icon" style="background: linear-gradient(180deg, #ff9500, #ff5e3a);">??</div>
               <span>ทรัพย์สิน</span>
             </div>
-            <div class="app-icon" id="icloud-widget-scan">
-              <div class="app-icon-bg" style="background: linear-gradient(135deg, #af52de, #8e44ad);">??</div>
+            <div class="launcher-item" id="icloud-widget-scan">
+              <div class="launcher-icon" style="background: linear-gradient(180deg, #5856d6, #3b3a98);">??</div>
               <span>สแกน QR</span>
             </div>
-            <div class="app-icon" id="icloud-widget-log">
-              <div class="app-icon-bg" style="background: linear-gradient(135deg, #ff3b30, #c0392b);">??</div>
+            <div class="launcher-item" id="icloud-widget-log">
+              <div class="launcher-icon" style="background: linear-gradient(180deg, #ffcc00, #ff9500);">??</div>
               <span>ประวัติ</span>
             </div>
-            <div class="app-icon" id="icloud-widget-analytics">
-              <div class="app-icon-bg" style="background: linear-gradient(135deg, #5856d6, #48484a);">??</div>
+            <div class="launcher-item" id="icloud-widget-analytics">
+              <div class="launcher-icon" style="background: linear-gradient(180deg, #34c759, #28a745);">??</div>
               <span>วิเคราะห์</span>
-            </div>
-            <div class="app-icon" id="icloud-widget-report-devices">
-              <div class="app-icon-bg" style="background: linear-gradient(135deg, #8e8e93, #48484a);">??</div>
-              <span>รายงานอุป...</span>
-            </div>
-            <div class="app-icon" id="icloud-widget-report-assets">
-              <div class="app-icon-bg" style="background: linear-gradient(135deg, #8e8e93, #48484a);">??</div>
-              <span>รายงานทรั...</span>
             </div>
           </div>
         </div>
       </div>
-      
       <!-- DASHBOARD BACK BUTTON FOR ICLOUD VIEWS -->
       <button id="btn-icloud-back" class="btn btn-secondary hidden" style="margin-bottom: 1rem; border-radius: 20px; backdrop-filter: blur(10px); background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:0.5rem;"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
@@ -861,7 +911,7 @@
     const backBtn = document.getElementById("btn-icloud-back");
 
     // GSAP Entry Animation
-    gsap.from(".icloud-widget", {
+    gsap.from(".icloud-card", {
       duration: 0.8,
       y: 50,
       opacity: 0,
@@ -926,6 +976,9 @@
 </script>
 </body>
 </html>
+
+
+
 
 
 
