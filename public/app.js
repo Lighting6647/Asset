@@ -2825,7 +2825,7 @@ function updateCommandCenterData() {
     let html = '';
     if(logs.length === 0) html = '<span style="color:#aacad2;">No recent activity</span>';
     else {
-      logs.slice(0,5).forEach*l => {
+      logs.slice(0,5).forEach(l => {
         html += `<div class="cc-log-item">
           <span class="cc-log-action">${l.action||'ACTION'} - ${l.details||''}</span>
           <span class="cc-log-time">${new Date(l.timestamp).toLocaleDateString()}</span>

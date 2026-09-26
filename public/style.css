@@ -2245,3 +2245,10 @@ body {
 @media (max-width: 992px) {
   .col-4, .col-8 { grid-column: span 12; }
 }
+
+
+
+#icloud-dashboard { display: none !important; }
+#command-center-dashboard { display: grid !important; }
+
+body.active-cc { background: #05080e !important; background-image: none !important; }
