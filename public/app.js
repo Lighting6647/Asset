@@ -2844,9 +2844,25 @@ window.updateICloudDashboardData = function() {
 
 // Bind buttons
 document.addEventListener('DOMContentLoaded', ()=>{
+  
   const bind = (id, target) => {
     const el = document.getElementById(id);
-    if(el) el.onclick = () => document.getElementById(target)?.click();
+    if(el) {
+      el.onclick = () => {
+        // Trigger original sidebar action
+        const targetEl = document.getElementById(target);
+        if (targetEl) targetEl.click();
+        
+        // Foolproof visibility toggle
+        const ccDashboard = document.getElementById('command-center-dashboard');
+        const viewContainer = document.getElementById('icloud-view-container');
+        const backBtn = document.getElementById('btn-icloud-back');
+        
+        if (ccDashboard) ccDashboard.classList.add('hidden');
+        if (viewContainer) viewContainer.classList.remove('hidden');
+        if (backBtn) backBtn.classList.remove('hidden');
+      };
+    }
   }
 
   bind('cc-btn-devices-reg', 'sb-devices-registered');
@@ -2864,4 +2880,18 @@ document.addEventListener('DOMContentLoaded', ()=>{
   bind('cc-btn-alerts', 'sb-alerts');
   bind('cc-btn-logs', 'sb-log');
   bind('cc-btn-reports', 'sb-reports');
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  const backBtn = document.getElementById('btn-icloud-back');
+  if (backBtn) {
+    // Replace listener by cloning
+    const newBtn = backBtn.cloneNode(true);
+    backBtn.parentNode.replaceChild(newBtn, backBtn);
+    newBtn.addEventListener('click', () => {
+      document.getElementById('icloud-view-container')?.classList.add('hidden');
+      document.getElementById('command-center-dashboard')?.classList.remove('hidden');
+      newBtn.classList.add('hidden');
+    });
+  }
 });
