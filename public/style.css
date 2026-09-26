@@ -1966,9 +1966,9 @@ body {
 }
 
 .dashboard-layout { display: block !important; }
-.sidebar { display: none !important; }
-.main-content { margin-left: 0 !important; padding: 40px 0 !important; background: transparent !important; }
-.dashboard-header, .background-effects, .icloud-topbar { display: none !important; }
+
+
+.icloud-topbar { display: none !important; }
 
 /* Grid System */
 .icloud-grid-exact {
