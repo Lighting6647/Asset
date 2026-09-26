@@ -510,7 +510,7 @@ document.addEventListener('DOMContentLoaded', () => {
       updateClientPortal();
     } catch (err) {
       console.error('Error loading data:', err);
-      showToast('Network error: server unreachable');
+      // Silenced toast for transparent retries
     }
   }
 
@@ -2461,7 +2461,27 @@ document.addEventListener('DOMContentLoaded', () => {
   // Load data immediately on page load
   loadData();
   // Poll every 1 second for near-instant synchronization across devices
-  setInterval(loadData, 1000);
+  
+  async function pollDevices() {
+    try {
+      const devicesRes = await fetch('/api/devices');
+      if (!devicesRes.ok) return;
+      const devicesData = await devicesRes.json();
+      
+      devices = devicesData.devices || [];
+      logs = devicesData.logs || [];
+      serverIpAddress = devicesData.serverIp || 'localhost';
+      
+      updateAdminDashboard();
+      updateClientPortal();
+    } catch (err) {
+      console.error('Polling error:', err);
+    }
+  }
+  
+  // Use lightweight polling for status updates, avoid downloading heavy assets (images) every second
+  setInterval(pollDevices, 2000);
+
   // --- Image Preview Logic ---
   const cameraCaptureFiles = { new: null, edit: null };
 
