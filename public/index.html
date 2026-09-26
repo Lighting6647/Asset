@@ -18,7 +18,7 @@
   <script src="https://unpkg.com/html5-qrcode"></script>
   <link rel="stylesheet" href="style.css">
 </head>
-<body class="active-cc">
+<body>
   <div class="background-effects">
     <div class="glow-orb orb-purple"></div>
     <div class="glow-orb orb-indigo"></div>
@@ -370,143 +370,10 @@
           <div class="bottom-dots">...</div>
         </div>
       </div>
-      
-      
-      <!-- COMMAND CENTER DASHBOARD (Option 3) -->
-      <div id="command-center-dashboard" class="cc-dashboard">
-        
-        <!-- Status -->
-        <div class="cc-panel col-4">
-          <h4 class="cc-title"><div class="title-dot"></div>Network Status</h4>
-          <div class="cc-value green">ONLINE</div>
-          <p style="color:#aacad2; font-size:12px;">All systems operational</p>
-          <div id="map-container" style="margin-top: 15px; height: 180px; border-radius: 8px; border: 1px solid rgba(0,255,255,0.2); overflow: hidden; z-index: 10;"></div>
-        </div>
-
-        <div class="cc-panel col-4">
-          <h4 class="cc-title"><div class="title-dot"></div>Total Assets</h4>
-          <div class="cc-value" id="cc-asset-count">0</div>
-          <p style="color:#aacad2; font-size:12px;">Registered Devices & Equipment</p>
-        </div>
-
-        <div class="cc-panel col-4">
-          <h4 class="cc-title" style="color:#ff0033;"><div class="title-dot" style="background:#ff0033; box-shadow: 0 0 8px #ff0033;"></div>Arrears / Alerts</h4>
-          <div class="cc-value red" id="cc-alert-count">0</div>
-          <p style="color:#aacad2; font-size:12px;">Devices needing immediate audit</p>
-        </div>
-
-        <!-- Navigation -->
-        
-        <div class="cc-panel col-12">
-          <h4 class="cc-title"><div class="title-dot"></div>System Control Modules</h4>
-          <div class="cc-modules-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; margin-top: 15px;">
-            
-            <div class="cc-module-card" id="cc-btn-devices-reg">
-              <div class="cc-mod-icon">📱</div>
-              <div class="cc-mod-info">
-                <h5>ข้อมูลอุปกรณ์ (Devices)</h5>
-                <span>Devices Database</span>
-              </div>
-            </div>
-
-            <div class="cc-module-card" id="cc-btn-assets-reg">
-              <div class="cc-mod-icon">📋</div>
-              <div class="cc-mod-info">
-                <h5>ข้อมูลทรัพย์สิน (Assets)</h5>
-                <span>Assets Database</span>
-              </div>
-            </div>
-
-            <div class="cc-module-card" id="cc-btn-scan">
-              <div class="cc-mod-icon" style="color: #00ff66;">📷</div>
-              <div class="cc-mod-info">
-                <h5 style="color: #00ff66;">สแกน QR / Barcode</h5>
-                <span>Quick Scan Tool</span>
-              </div>
-            </div>
-
-            <div class="cc-module-card" id="cc-btn-alerts">
-              <div class="cc-mod-icon" style="color: #ff0033;">🔔</div>
-              <div class="cc-mod-info">
-                <h5 style="color: #ff0033;">ศูนย์แจ้งเตือน (Alerts)</h5>
-                <span>Alerts & Notifications</span>
-              </div>
-            </div>
-
-            <div class="cc-module-card" id="cc-btn-logs">
-              <div class="cc-mod-icon">🕘</div>
-              <div class="cc-mod-info">
-                <h5>ประวัติการทำงาน</h5>
-                <span>System Audit Logs</span>
-              </div>
-            </div>
-
-            <div class="cc-module-card" id="cc-btn-ass-analytics">
-              <div class="cc-mod-icon">📊</div>
-              <div class="cc-mod-info">
-                <h5>วิเคราะห์ทรัพย์สิน</h5>
-                <span>Analytics Dashboard</span>
-              </div>
-            </div>
-
-            <div class="cc-module-card" id="cc-btn-reports-dev">
-              <div class="cc-mod-icon">📄</div>
-              <div class="cc-mod-info">
-                <h5>รายงานอุปกรณ์</h5>
-                <span>Device Reports</span>
-              </div>
-            </div>
-
-            <div class="cc-module-card" id="cc-btn-reports-ass">
-              <div class="cc-mod-icon">📑</div>
-              <div class="cc-mod-info">
-                <h5>รายงานทรัพย์สิน</h5>
-                <span>Asset Reports</span>
-              </div>
-            </div>
-
-            <div class="cc-module-card" id="cc-btn-settings">
-              <div class="cc-mod-icon" style="color: #ffcc00;">⚙️</div>
-              <div class="cc-mod-info">
-                <h5 style="color: #ffcc00;">ตั้งค่าระบบ</h5>
-                <span>System Settings</span>
-              </div>
-            </div>
-
-          </div>
-        </div>
-
-        <!-- Device Table -->
-        <div class="cc-panel col-8">
-          <h4 class="cc-title"><div class="title-dot"></div>Active Nodes Monitoring</h4>
-          <table class="cc-table">
-            <thead>
-              <tr>
-                <th>Node ID</th>
-                <th>Description</th>
-                <th>Department</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody id="cc-device-table">
-              <!-- Dynamic -->
-              <tr><td colspan="4">Initializing...</td></tr>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- Threat / Audit Log -->
-        <div class="cc-panel col-4">
-          <h4 class="cc-title" style="color:#ffcc00;"><div class="title-dot" style="background:#ffcc00; box-shadow: 0 0 8px #ffcc00;"></div>Analytics & Log</h4>
-          <div id="cc-log-container" style="margin-top:15px;">
-            <!-- Dynamic -->
-          </div>
-        </div>
-      </div>
       <!-- DASHBOARD BACK BUTTON FOR ICLOUD VIEWS -->
       <button id="btn-icloud-back" class="btn btn-secondary hidden" style="margin-bottom: 1rem; border-radius: 20px; backdrop-filter: blur(10px); background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:0.5rem;"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-        กลับสู่หน้าหลัก (Back to Dashboard)
+        กลับสู่หน้าหลัก
       </button>
 
       <div id="icloud-view-container" class="hidden view-section-overlay">
@@ -658,7 +525,7 @@
               พิกัดอ้างอิงจากการระบุตำแหน่งขณะกดยืนยันตัวตน
             </span>
           </div>
-          <div id="map-container-placeholder" style="display:none;"></div>
+          <div id="map-container" style="height: 380px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); overflow: hidden; background: rgba(0,0,0,0.2); z-index: 10;"></div>
         </div>
 
         <div class="table-container">
