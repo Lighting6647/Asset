@@ -754,6 +754,46 @@ document.addEventListener('DOMContentLoaded', () => {
     if (elStatTopLocations) elStatTopLocations.textContent = uniqueLocations.size.toLocaleString();
 
 
+    
+    // Mini Map Widget
+    if (typeof L !== 'undefined' && document.getElementById('mini-map-container')) {
+      if (!window.miniMapInstance) {
+        window.miniMapInstance = L.map('mini-map-container', { zoomControl: false, attributionControl: false }).setView([13.736717, 100.523186], 5);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(window.miniMapInstance);
+        window.miniMapMarkers = L.layerGroup().addTo(window.miniMapInstance);
+        
+        const btnExpandMap = document.getElementById('btn-expand-map');
+        if (btnExpandMap) {
+          btnExpandMap.addEventListener('click', () => {
+            showStandalonePage(devicesSection);
+            setTimeout(() => {
+              document.getElementById('map-container').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 300);
+          });
+        }
+      }
+      
+      // Update markers
+      window.miniMapMarkers.clearLayers();
+      const validDevices = devices.filter(d => d.lat && d.lng);
+      validDevices.forEach(d => {
+        let color = '#3b82f6';
+        if (d.status === 'active') color = '#10b981';
+        if (d.status === 'pending') color = '#f59e0b';
+        if (d.status === 'overdue') color = '#ef4444';
+        
+        const markerHtml = `<div style="background-color: ${color}; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 4px rgba(0,0,0,0.5);"></div>`;
+        const icon = L.divIcon({ html: markerHtml, className: '', iconSize: [12, 12], iconAnchor: [6, 6] });
+        L.marker([parseFloat(d.lat), parseFloat(d.lng)], { icon }).addTo(window.miniMapMarkers)
+         .bindPopup(`<b>${escapeHtml(d.userName || d.name || 'อุปกรณ์')}</b><br>${escapeHtml(d.position || '')}`);
+      });
+      
+      if (validDevices.length > 0) {
+        const group = new L.featureGroup(window.miniMapMarkers.getLayers());
+        window.miniMapInstance.fitBounds(group.getBounds(), { padding: [10, 10], maxZoom: 12 });
+      }
+    }
+
     const dashboardSignature = JSON.stringify(devices.map(device => [device.id, device.status, device.userName || device.name, device.position]));
     if (dashboardSignature !== renderedDeviceDashboardSignature) {
       renderedDeviceDashboardSignature = dashboardSignature;

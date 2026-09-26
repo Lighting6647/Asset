@@ -184,9 +184,17 @@
       </section>
 
       <section class="device-dashboard-grid">
-        <article class="glass-card device-dashboard-panel">
+        <article class="glass-card device-dashboard-panel" style="display: flex; flex-direction: column;">
           <div class="device-dashboard-heading"><div><h2>ภาพรวมสถานะอุปกรณ์</h2><p>สัดส่วนจากอุปกรณ์ทั้งหมดในระบบ</p></div><strong id="device-health-percent">0%</strong></div>
           <div id="device-status-bars" class="device-status-bars"></div>
+          <div style="margin-top: 1rem; flex: 1; display: flex; flex-direction: column;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+              <span style="font-size: 0.85rem; color: var(--text-muted);">📍 พิกัดอุปกรณ์ล่าสุด</span>
+              <button id="btn-expand-map" class="btn btn-secondary" style="padding: 0.2rem 0.5rem; font-size: 0.7rem;">ดูแผนที่ใหญ่</button>
+            </div>
+            <div id="mini-map-container" style="flex: 1; min-height: 160px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); overflow: hidden; background: rgba(0,0,0,0.2); z-index: 10;"></div>
+          </div>
+
         </article>
         
         
