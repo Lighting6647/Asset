@@ -2249,6 +2249,6 @@ body {
 
 
 #icloud-dashboard { display: none !important; }
-#command-center-dashboard { display: grid !important; }
+#command-center-dashboard { display: grid; }
 
 body.active-cc { background: #05080e !important; background-image: none !important; }
