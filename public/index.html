@@ -195,84 +195,85 @@
           <div id="device-status-bars" class="device-status-bars"></div>
         </article>
         
-        <article class="glass-card device-dashboard-panel" style="padding: 1.5rem;">
-          <div class="device-dashboard-heading" style="margin-bottom: 1rem;">
-            <div>
-              <h2 style="font-family: 'Outfit', sans-serif; font-weight: 600; color: #fff; display: flex; align-items: center; gap: 0.5rem;">
-                <span>⚡</span> โมดูลระบบ (System Control Modules)
-              </h2>
-            </div>
-          </div>
-          
-          <div class="cc-modules-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px;">
+        <article class="glass-card device-dashboard-panel">
+          <div class="device-dashboard-heading"><div><h2>รายการที่ต้องดำเนินการ</h2><p>เรียงตามความสำคัญล่าสุด</p></div><div id="btn-view-device-work" class="btn btn-secondary" style="cursor: default;">สถานะการทำงาน</div></div>
+          <div id="device-action-summary" class="device-action-summary"></div>
+        </article>
+
+      <!-- COMMAND CENTER MODULES -->
+      <section style="margin-top: 2rem; margin-bottom: 2rem;">
+        <h2 style="font-family: 'Outfit', sans-serif; font-size: 1.25rem; font-weight: 600; color: #fff; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+          <span>⚡</span> โมดูลระบบ (System Control Modules)
+        </h2>
+        <div class="cc-modules-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 15px;">
             
             <div class="cc-module-card" id="cc-btn-devices-reg">
               <div class="cc-mod-icon">📱</div>
               <div class="cc-mod-info">
                 <h5>ข้อมูลอุปกรณ์ (Devices)</h5>
-                <span>Devices Database</span>
+                <span id="cc-data-devices" style="color: #6366f1; font-weight: bold;">Loading...</span>
               </div>
             </div>
             <div class="cc-module-card" id="cc-btn-assets-reg">
               <div class="cc-mod-icon">📋</div>
               <div class="cc-mod-info">
                 <h5>ข้อมูลทรัพย์สิน (Assets)</h5>
-                <span>Assets Database</span>
+                <span id="cc-data-assets" style="color: #6366f1; font-weight: bold;">Loading...</span>
               </div>
             </div>
             <div class="cc-module-card" id="cc-btn-scan">
               <div class="cc-mod-icon" style="color: #00ff66;">📷</div>
               <div class="cc-mod-info">
                 <h5 style="color: #00ff66;">สแกน QR / Barcode</h5>
-                <span>Quick Scan Tool</span>
+                <span style="color: var(--text-muted);">Quick Scan Tool</span>
               </div>
             </div>
             <div class="cc-module-card" id="cc-btn-alerts">
               <div class="cc-mod-icon" style="color: #ff0033;">🔔</div>
               <div class="cc-mod-info">
                 <h5 style="color: #ff0033;">ศูนย์แจ้งเตือน (Alerts)</h5>
-                <span>Alerts & Notifications</span>
+                <span id="cc-data-alerts" style="color: #ff0033; font-weight: bold;">Loading...</span>
               </div>
             </div>
             <div class="cc-module-card" id="cc-btn-logs">
               <div class="cc-mod-icon">🕘</div>
               <div class="cc-mod-info">
                 <h5>ประวัติการทำงาน</h5>
-                <span>System Audit Logs</span>
+                <span id="cc-data-logs" style="color: #6366f1; font-weight: bold;">Loading...</span>
               </div>
             </div>
             <div class="cc-module-card" id="cc-btn-ass-analytics">
               <div class="cc-mod-icon">📊</div>
               <div class="cc-mod-info">
                 <h5>วิเคราะห์ทรัพย์สิน</h5>
-                <span>Analytics Dashboard</span>
+                <span style="color: var(--text-muted);">Analytics Dashboard</span>
               </div>
             </div>
             <div class="cc-module-card" id="cc-btn-reports-dev">
               <div class="cc-mod-icon">📄</div>
               <div class="cc-mod-info">
                 <h5>รายงานอุปกรณ์</h5>
-                <span>Device Reports</span>
+                <span style="color: var(--text-muted);">Device Reports</span>
               </div>
             </div>
             <div class="cc-module-card" id="cc-btn-reports-ass">
               <div class="cc-mod-icon">📑</div>
               <div class="cc-mod-info">
                 <h5>รายงานทรัพย์สิน</h5>
-                <span>Asset Reports</span>
+                <span style="color: var(--text-muted);">Asset Reports</span>
               </div>
             </div>
             <div class="cc-module-card" id="cc-btn-settings">
               <div class="cc-mod-icon" style="color: #ffcc00;">⚙️</div>
               <div class="cc-mod-info">
                 <h5 style="color: #ffcc00;">ตั้งค่าระบบ</h5>
-                <span>System Settings</span>
+                <span style="color: var(--text-muted);">System Settings</span>
               </div>
             </div>
-
-          </div>
-        </article>
+            
+        </div>
       </section>
+</section>
       </div>
       </div> <!-- End devices-section-content -->
 

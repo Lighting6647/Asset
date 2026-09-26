@@ -666,7 +666,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const unverified = devices.filter(d => d.status === 'unverified').length;
     const overdue = devices.filter(d => d.status === 'overdue').length;
 
+    
+    const elDataDev = document.getElementById('cc-data-devices');
+    const elDataAss = document.getElementById('cc-data-assets');
+    const elDataLogs = document.getElementById('cc-data-logs');
+    const elDataAlerts = document.getElementById('cc-data-alerts');
+    
+    if (elDataDev) elDataDev.textContent = total + ' รายการ';
+    if (elDataAss) elDataAss.textContent = window._cachedAssetsLength !== undefined ? window._cachedAssetsLength + ' รายการ' : '0 รายการ';
+    if (elDataLogs) elDataLogs.textContent = logs ? logs.length + ' รายการ' : '0 รายการ';
+    if (elDataAlerts) elDataAlerts.textContent = (pending + overdue) > 0 ? (pending + overdue) + ' แจ้งเตือน' : 'ปกติ (0)';
+    
     statTotalDevices.textContent = total;
+
     statActiveDevices.textContent = active;
     statPendingDevices.textContent = pending;
     statUnverifiedDevices.textContent = unverified;
