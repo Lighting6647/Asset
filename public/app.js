@@ -498,13 +498,13 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       if (!response.ok) {
         const data = await response.json();
-        alert(data.error || 'รหัสผ่านไม่ถูกต้อง');
+        alert(data.error || (response.status === 502 ? 'เซิร์ฟเวอร์กำลังรีสตาร์ท กรุณารอสักครู่' : 'รหัสผ่านไม่ถูกต้อง'));
         return null;
       }
       return password;
     } catch (err) {
       console.error(err);
-      showToast('ไม่สามารถตรวจสอบรหัสผ่านได้');
+      showToast('ระบบขัดข้องหรือเซิร์ฟเวอร์กำลังรีสตาร์ท (502)');
       return null;
     }
   }
@@ -572,7 +572,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }).setView([13.736717, 100.523186], 6);
 
     // Dark-mode Map Tiles (CartoDB Dark Matter)
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
       subdomains: 'abcd',
       maxZoom: 20,
@@ -1500,7 +1500,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // --- Utility: Image Compression ---
-  function compressImage(file, maxWidth = 800, maxHeight = 800, quality = 0.6) {
+  function compressImage(file, maxWidth = 400, maxHeight = 400, quality = 0.4) {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.readAsDataURL(file);
@@ -1890,7 +1890,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     } catch (err) {
       console.error(err);
-      showToast('Registration failed');
+      showToast('การลงทะเบียนล้มเหลว กรุณาลองใหม่');
     }
   });
 
@@ -2493,7 +2493,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
           
           const errData = await res.json().catch(()=>({}));
-          showToast(errData.error || 'Error adding asset.');
+          showToast(errData.error || (res.status === 413 ? 'ขนาดรูปภาพใหญ่เกินไป' : res.status === 502 ? 'เซิร์ฟเวอร์กำลังรีสตาร์ท' : 'เกิดข้อผิดพลาดในการบันทึก'));
 
         }
       } catch (err) {
@@ -2810,7 +2810,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     if (!pickerMap) {
       pickerMap = L.map('picker-map-container').setView([13.736717, 100.523186], 13);
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap',
         maxZoom: 20
       }).addTo(pickerMap);
