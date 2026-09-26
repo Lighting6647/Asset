@@ -684,7 +684,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ['Overdue', overdue, 'danger']
       ];
       deviceStatusBars.innerHTML = statusRows.map(([label, count, tone]) => `
-        <button class="device-status-row" data-status="${label.toLowerCase()}">
+        <div class="device-status-row" style="cursor: default;" data-status="${label.toLowerCase()}">
           <span>${label}</span><div><i class="${tone}" style="width:${total ? Math.round((count / total) * 100) : 0}%"></i></div><strong>${count}</strong>
         </button>
       `).join('');
