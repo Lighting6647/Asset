@@ -2782,3 +2782,28 @@ if(typeof window.renderLogs === 'function') {
     updateICloudDashboardData();
   };
 }
+
+
+
+// Hybrid Dashboard Module Bindings
+document.addEventListener('DOMContentLoaded', () => {
+  const bind = (id, target) => {
+    const el = document.getElementById(id);
+    if(el) {
+      el.addEventListener('click', () => {
+        const targetEl = document.getElementById(target);
+        if (targetEl) targetEl.click();
+      });
+    }
+  };
+
+  bind('cc-btn-devices-reg', 'sb-devices-registered');
+  bind('cc-btn-assets-reg', 'sb-assets-registered');
+  bind('cc-btn-scan', 'sb-scan-qr');
+  bind('cc-btn-alerts', 'sb-alert-center');
+  bind('cc-btn-logs', 'sb-activity-log');
+  bind('cc-btn-ass-analytics', 'sb-asset-analytics');
+  bind('cc-btn-reports-dev', 'sb-export-devices-pdf');
+  bind('cc-btn-reports-ass', 'sb-export-assets-pdf');
+  bind('cc-btn-settings', 'sb-settings');
+});
