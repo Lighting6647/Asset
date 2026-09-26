@@ -153,6 +153,28 @@ document.addEventListener('DOMContentLoaded', () => {
     if(activeBtn) activeBtn.classList.add('active');
     animateSidebarSelection(activeBtn);
     if (window.matchMedia('(max-width: 1100px)').matches) closeMobileMenu();
+    
+    // Toggle Global Back Button using GSAP
+    const backBtnContainer = document.getElementById('gsap-back-btn-container');
+    if (backBtnContainer) {
+      if (activeBtn && activeBtn.id !== 'sb-dashboard') {
+        if (backBtnContainer.classList.contains('hidden')) {
+          backBtnContainer.classList.remove('hidden');
+          if (window.gsap) {
+            gsap.fromTo(backBtnContainer, { opacity: 0, x: -20 }, { opacity: 1, x: 0, duration: 0.4, ease: 'power2.out' });
+          }
+        }
+      } else {
+        if (!backBtnContainer.classList.contains('hidden')) {
+          if (window.gsap) {
+            gsap.to(backBtnContainer, { opacity: 0, x: -20, duration: 0.3, ease: 'power2.in', onComplete: () => backBtnContainer.classList.add('hidden') });
+          } else {
+            backBtnContainer.classList.add('hidden');
+          }
+        }
+      }
+    }
+
   }
 
   function openMobileMenu() {
@@ -2806,4 +2828,48 @@ document.addEventListener('DOMContentLoaded', () => {
   bind('cc-btn-reports-dev', 'sb-export-devices-pdf');
   bind('cc-btn-reports-ass', 'sb-export-assets-pdf');
   bind('cc-btn-settings', 'sb-settings');
+});
+
+
+
+// Global Back Button Hover & Click
+document.addEventListener('DOMContentLoaded', () => {
+  const backBtn = document.getElementById('gsap-back-btn');
+  const sbDashboard = document.getElementById('sb-dashboard');
+  
+  if (backBtn && sbDashboard) {
+    backBtn.addEventListener('click', () => {
+      // Small click animation
+      if (window.gsap) {
+        gsap.to(backBtn, { scale: 0.95, duration: 0.1, yoyo: true, repeat: 1 });
+      }
+      setTimeout(() => {
+        sbDashboard.click();
+      }, 150);
+    });
+
+    backBtn.addEventListener('mouseenter', () => {
+      if (window.gsap) {
+        gsap.to(backBtn, {
+          borderColor: 'rgba(255,255,255,0.5)',
+          boxShadow: '0 4px 20px rgba(255,255,255,0.2)',
+          x: -3,
+          duration: 0.3,
+          ease: 'power2.out'
+        });
+      }
+    });
+
+    backBtn.addEventListener('mouseleave', () => {
+      if (window.gsap) {
+        gsap.to(backBtn, {
+          borderColor: 'rgba(255,255,255,0.15)',
+          boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
+          x: 0,
+          duration: 0.3,
+          ease: 'power2.out'
+        });
+      }
+    });
+  }
 });
