@@ -2368,7 +2368,10 @@ document.addEventListener('DOMContentLoaded', () => {
           addAssetDrawer.classList.add('hidden');
           loadData();
         } else {
-          showToast('Error adding asset.');
+          
+          const errData = await res.json().catch(()=>({}));
+          showToast(errData.error || 'Error adding asset.');
+
         }
       } catch (err) {
         console.error(err);

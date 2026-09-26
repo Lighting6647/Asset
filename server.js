@@ -27,6 +27,10 @@ const JSONBIN_BIN_ID = process.env.JSONBIN_BIN_ID;
 
 // Helper to read database from memory cache
 function readDb() {
+  if (!dbInMemory) dbInMemory = { devices: [], logs: [], assets: [] };
+  if (!dbInMemory.devices) dbInMemory.devices = [];
+  if (!dbInMemory.logs) dbInMemory.logs = [];
+  if (!dbInMemory.assets) dbInMemory.assets = [];
   return dbInMemory;
 }
 
