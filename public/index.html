@@ -193,51 +193,11 @@
           <div class="device-dashboard-heading"><div><h2>รายการที่ต้องดำเนินการ</h2><p>เรียงตามความสำคัญล่าสุด</p></div><div id="btn-view-device-work" class="btn btn-secondary" style="cursor: default;">สถานะการทำงาน</div></div>
           <div id="device-action-summary" class="device-action-summary"></div>
         </article>
-      </section>
-
-      
-      <!-- EMBEDDED MODULE DASHBOARDS -->
-      <section id="alert-center-page" style="margin-bottom: 2rem; border: 1px solid rgba(255,255,255,0.1);" class="glass-card main-card operations-page ">
-        <div class="section-heading">
-          <div>
-            <h2>ศูนย์แจ้งเตือนและงานค้าง</h2>
-            <p>รายการที่ต้องตรวจสอบหรือดำเนินการจากข้อมูลล่าสุด</p>
-          </div>
-          <button id="btn-refresh-alerts" class="btn btn-secondary">↻ อัปเดตข้อมูล</button>
-        </div>
-        <div id="alert-summary-cards" class="operations-summary-grid"></div>
-        <div id="alert-work-list" class="operations-list"></div>
-      </section>
-
-      
-      <section id="asset-analytics-page" style="margin-bottom: 2rem; border: 1px solid rgba(255,255,255,0.1);" class="glass-card main-card operations-page ">
-        <div class="section-heading">
-          <div>
-            <h2>วิเคราะห์ทรัพย์สิน</h2>
-            <p>ภาพรวมการตรวจนับ หมวดหมู่ และสถานที่จัดเก็บ</p>
-          </div>
-        </div>
-        <div id="analytics-summary-cards" class="operations-summary-grid"></div>
-        <div class="analytics-panels">
-          <section class="operations-panel">
-            <h3>ทรัพย์สินตามหมวดหมู่</h3>
-            <div id="analytics-category-list" class="analytics-list"></div>
-          </section>
-          <section class="operations-panel">
-            <h3>ทรัพย์สินตามสถานที่</h3>
-            <div id="analytics-location-list" class="analytics-list"></div>
-          </section>
-        </div>
-      </section>
-
-      
-      
-  <!-- COMMAND CENTER MODULES -->
-      <section style="margin-top: 2rem; margin-bottom: 2rem;">
-        <h2 style="font-family: 'Outfit', sans-serif; font-size: 1.25rem; font-weight: 600; color: #fff; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-          <span>⚡</span> โมดูลระบบ (System Control Modules)
-        </h2>
-        <div class="cc-modules-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 15px;">
+        <!-- COMMAND CENTER MODULES -->
+      <article class="glass-card device-dashboard-panel" id="modules-panel" style="display: flex; flex-direction: column;">
+        <div class="device-dashboard-heading" style="padding: 1.25rem 1.25rem 0;"><div><h2 style="font-size: 1.15rem; margin-bottom: 0.25rem; color: #fff;">⚡ โมดูลระบบ (Modules)</h2><p style="font-size: 0.78rem; color: var(--text-muted); margin: 0;">เมนูลัด (Quick Control)</p></div></div>
+<div style="padding: 0 1.25rem 1.25rem; flex: 1;">
+        <div class="cc-modules-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px;">
             
             <div class="cc-module-card" id="cc-btn-devices-reg">
               <div class="cc-mod-icon">📱</div>
@@ -292,7 +252,48 @@
             </div>
             
         </div>
+      </div>
+</article>
       </section>
+
+      
+      <!-- EMBEDDED MODULE DASHBOARDS -->
+      <section id="alert-center-page" style="margin-bottom: 2rem; border: 1px solid rgba(255,255,255,0.1);" class="glass-card main-card operations-page ">
+        <div class="section-heading">
+          <div>
+            <h2>ศูนย์แจ้งเตือนและงานค้าง</h2>
+            <p>รายการที่ต้องตรวจสอบหรือดำเนินการจากข้อมูลล่าสุด</p>
+          </div>
+          <button id="btn-refresh-alerts" class="btn btn-secondary">↻ อัปเดตข้อมูล</button>
+        </div>
+        <div id="alert-summary-cards" class="operations-summary-grid"></div>
+        <div id="alert-work-list" class="operations-list"></div>
+      </section>
+
+      
+      <section id="asset-analytics-page" style="margin-bottom: 2rem; border: 1px solid rgba(255,255,255,0.1);" class="glass-card main-card operations-page ">
+        <div class="section-heading">
+          <div>
+            <h2>วิเคราะห์ทรัพย์สิน</h2>
+            <p>ภาพรวมการตรวจนับ หมวดหมู่ และสถานที่จัดเก็บ</p>
+          </div>
+        </div>
+        <div id="analytics-summary-cards" class="operations-summary-grid"></div>
+        <div class="analytics-panels">
+          <section class="operations-panel">
+            <h3>ทรัพย์สินตามหมวดหมู่</h3>
+            <div id="analytics-category-list" class="analytics-list"></div>
+          </section>
+          <section class="operations-panel">
+            <h3>ทรัพย์สินตามสถานที่</h3>
+            <div id="analytics-location-list" class="analytics-list"></div>
+          </section>
+        </div>
+      </section>
+
+      
+      
+  
 </section>
       </div>
       </div> <!-- End devices-section-content -->
