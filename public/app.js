@@ -257,6 +257,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (sbDashboard) {
     sbDashboard.addEventListener('click', () => {
       setActiveSidebar(sbDashboard);
+      hideStandalonePages();
       if (addAssetDrawer) addAssetDrawer.classList.add('hidden');
       if (scanAssetDrawer) scanAssetDrawer.classList.add('hidden');
       if (navDevicesBtn) navDevicesBtn.click(); // Switch to Devices view
@@ -1034,9 +1035,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function hideStandalonePages() {
     activityLogPage.classList.add('hidden');
-    alertCenterPage.classList.add('hidden');
-    assetAnalyticsPage.classList.add('hidden');
     settingsPage.classList.add('hidden');
+    // alertCenterPage and assetAnalyticsPage are embedded, don't hide them globally
   }
 
   function showStandalonePage(page) {
@@ -2172,6 +2172,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (navDevicesBtn && navAssetsBtn) {
     navDevicesBtn.addEventListener('click', () => {
+      hideStandalonePages();
       navDevicesBtn.classList.replace('btn-secondary', 'btn-primary');
       navAssetsBtn.classList.replace('btn-primary', 'btn-secondary');
       devicesSection.classList.remove('hidden');
@@ -2184,6 +2185,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (btnBackToDashboard) btnBackToDashboard.classList.add('hidden');
     });
     navAssetsBtn.addEventListener('click', () => {
+      hideStandalonePages();
       navAssetsBtn.classList.replace('btn-secondary', 'btn-primary');
       navDevicesBtn.classList.replace('btn-primary', 'btn-secondary');
       assetsSection.classList.remove('hidden');

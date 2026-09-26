@@ -50,10 +50,7 @@
             <span class="sb-submenu-icon">🕘</span>
             <span>ประวัติการทำรายการ (Audit Log)</span>
           </button>
-          <button id="sb-alert-center" class="sidebar-submenu-item">
-            <span class="sb-submenu-icon">🔔</span>
-            <span>ศูนย์แจ้งเตือน (Alerts)</span>
-          </button>
+          
         </div>
         <button id="sb-assets" class="sidebar-menu-item">
           <span class="sb-icon">🏢</span>
@@ -68,10 +65,7 @@
             <span class="sb-submenu-icon">📷</span>
             <span>สแกน QR (Scan QR)</span>
           </button>
-          <button id="sb-asset-analytics" class="sidebar-submenu-item">
-            <span class="sb-submenu-icon">📊</span>
-            <span>วิเคราะห์ทรัพย์สิน (Analytics)</span>
-          </button>
+          
         </div>
         <button id="sb-export-devices-pdf" class="sidebar-menu-item">
           <span class="sb-icon">📄</span>
@@ -201,7 +195,44 @@
         </article>
       </section>
 
-      <!-- COMMAND CENTER MODULES -->
+      
+      <!-- EMBEDDED MODULE DASHBOARDS -->
+      <section id="alert-center-page" style="margin-bottom: 2rem; border: 1px solid rgba(255,255,255,0.1);" class="glass-card main-card operations-page ">
+        <div class="section-heading">
+          <div>
+            <h2>ศูนย์แจ้งเตือนและงานค้าง</h2>
+            <p>รายการที่ต้องตรวจสอบหรือดำเนินการจากข้อมูลล่าสุด</p>
+          </div>
+          <button id="btn-refresh-alerts" class="btn btn-secondary">↻ อัปเดตข้อมูล</button>
+        </div>
+        <div id="alert-summary-cards" class="operations-summary-grid"></div>
+        <div id="alert-work-list" class="operations-list"></div>
+      </section>
+
+      
+      <section id="asset-analytics-page" style="margin-bottom: 2rem; border: 1px solid rgba(255,255,255,0.1);" class="glass-card main-card operations-page ">
+        <div class="section-heading">
+          <div>
+            <h2>วิเคราะห์ทรัพย์สิน</h2>
+            <p>ภาพรวมการตรวจนับ หมวดหมู่ และสถานที่จัดเก็บ</p>
+          </div>
+        </div>
+        <div id="analytics-summary-cards" class="operations-summary-grid"></div>
+        <div class="analytics-panels">
+          <section class="operations-panel">
+            <h3>ทรัพย์สินตามหมวดหมู่</h3>
+            <div id="analytics-category-list" class="analytics-list"></div>
+          </section>
+          <section class="operations-panel">
+            <h3>ทรัพย์สินตามสถานที่</h3>
+            <div id="analytics-location-list" class="analytics-list"></div>
+          </section>
+        </div>
+      </section>
+
+      
+      
+  <!-- COMMAND CENTER MODULES -->
       <section style="margin-top: 2rem; margin-bottom: 2rem;">
         <h2 style="font-family: 'Outfit', sans-serif; font-size: 1.25rem; font-weight: 600; color: #fff; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
           <span>⚡</span> โมดูลระบบ (System Control Modules)
@@ -229,13 +260,7 @@
                 <span style="color: var(--text-muted);">Quick Scan Tool</span>
               </div>
             </div>
-            <div class="cc-module-card" id="cc-btn-alerts">
-              <div class="cc-mod-icon" style="color: #ff0033;">🔔</div>
-              <div class="cc-mod-info">
-                <h5 style="color: #ff0033;">ศูนย์แจ้งเตือน (Alerts)</h5>
-                <span id="cc-data-alerts" style="color: #ff0033; font-weight: bold;">Loading...</span>
-              </div>
-            </div>
+            
             <div class="cc-module-card" id="cc-btn-logs">
               <div class="cc-mod-icon">🕘</div>
               <div class="cc-mod-info">
@@ -243,13 +268,7 @@
                 <span id="cc-data-logs" style="color: #6366f1; font-weight: bold;">Loading...</span>
               </div>
             </div>
-            <div class="cc-module-card" id="cc-btn-ass-analytics">
-              <div class="cc-mod-icon">📊</div>
-              <div class="cc-mod-info">
-                <h5>วิเคราะห์ทรัพย์สิน</h5>
-                <span style="color: var(--text-muted);">Analytics Dashboard</span>
-              </div>
-            </div>
+            
             <div class="cc-module-card" id="cc-btn-reports-dev">
               <div class="cc-mod-icon">📄</div>
               <div class="cc-mod-info">
@@ -634,38 +653,6 @@
           <ul id="system-logs-list" class="logs-list">
             <!-- Rendered via JS -->
           </ul>
-        </div>
-      </section>
-
-      <section id="alert-center-page" class="glass-card main-card operations-page hidden">
-        <div class="section-heading">
-          <div>
-            <h2>ศูนย์แจ้งเตือนและงานค้าง</h2>
-            <p>รายการที่ต้องตรวจสอบหรือดำเนินการจากข้อมูลล่าสุด</p>
-          </div>
-          <button id="btn-refresh-alerts" class="btn btn-secondary">↻ อัปเดตข้อมูล</button>
-        </div>
-        <div id="alert-summary-cards" class="operations-summary-grid"></div>
-        <div id="alert-work-list" class="operations-list"></div>
-      </section>
-
-      <section id="asset-analytics-page" class="glass-card main-card operations-page hidden">
-        <div class="section-heading">
-          <div>
-            <h2>วิเคราะห์ทรัพย์สิน</h2>
-            <p>ภาพรวมการตรวจนับ หมวดหมู่ และสถานที่จัดเก็บ</p>
-          </div>
-        </div>
-        <div id="analytics-summary-cards" class="operations-summary-grid"></div>
-        <div class="analytics-panels">
-          <section class="operations-panel">
-            <h3>ทรัพย์สินตามหมวดหมู่</h3>
-            <div id="analytics-category-list" class="analytics-list"></div>
-          </section>
-          <section class="operations-panel">
-            <h3>ทรัพย์สินตามสถานที่</h3>
-            <div id="analytics-location-list" class="analytics-list"></div>
-          </section>
         </div>
       </section>
 
