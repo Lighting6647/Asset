@@ -287,11 +287,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const row = event.target.closest('.device-status-row');
     if (row) openDeviceManagement(row.dataset.status || 'all');
   });
-  deviceActionSummary.addEventListener('click', event => {
+  if (deviceActionSummary) deviceActionSummary.addEventListener('click', event => {
     const row = event.target.closest('.device-action-row');
     if (row) openDeviceManagement(row.dataset.status || 'all');
   });
-  btnViewDeviceWork.addEventListener('click', () => openDeviceManagement('all'));
+  if (btnViewDeviceWork) btnViewDeviceWork.addEventListener('click', () => openDeviceManagement('all'));
   if (sbAssets) {
     sbAssets.addEventListener('click', () => {
       setActiveSidebar(sbAssets);
@@ -694,7 +694,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ...devices.filter(device => device.status === 'pending'),
         ...devices.filter(device => device.status === 'unverified')
       ].slice(0, 5);
-      deviceActionSummary.innerHTML = workItems.length
+      if (deviceActionSummary) deviceActionSummary.innerHTML = workItems.length
         ? workItems.map(device => `
             <button class="device-action-row" data-status="${escapeHtml(device.status)}">
               <span class="status-indicator ${device.status === 'overdue' ? 'unverified' : 'active'}"></span>
