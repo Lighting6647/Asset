@@ -311,9 +311,10 @@ const server = http.createServer((req, res) => {
 
   // POST /api/check-password - Validate an action password before opening a protected control
   if (req.method === 'POST' && pathname === '/api/check-password') {
-    let body = '';
-    req.on('data', chunk => { body += chunk.toString(); });
+    const chunks = [];
+    req.on('data', chunk => chunks.push(chunk));
     req.on('end', () => {
+      const body = Buffer.concat(chunks).toString('utf8');
       try {
         const data = JSON.parse(body);
         if (!requireActionPassword(data, res)) return;
@@ -321,7 +322,7 @@ const server = http.createServer((req, res) => {
         res.end(JSON.stringify({ valid: true }));
       } catch (err) {
         res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Invalid payload' }));
+        res.end(JSON.stringify({ error: 'Invalid payload: ' + err.message }));
       }
     });
     return;
@@ -329,9 +330,10 @@ const server = http.createServer((req, res) => {
 
   // POST /api/repair-thai-text - Protected maintenance endpoint for repairing corrupted UTF-8 text
   if (req.method === 'POST' && pathname === '/api/repair-thai-text') {
-    let body = '';
-    req.on('data', chunk => { body += chunk.toString(); });
+    const chunks = [];
+    req.on('data', chunk => chunks.push(chunk));
     req.on('end', () => {
+      const body = Buffer.concat(chunks).toString('utf8');
       try {
         const data = JSON.parse(body);
         if (!requireActionPassword(data, res)) return;
@@ -382,9 +384,10 @@ const server = http.createServer((req, res) => {
 
   // POST /api/register - Register a new device
   if (req.method === 'POST' && pathname === '/api/register') {
-    let body = '';
-    req.on('data', chunk => { body += chunk.toString(); });
+    const chunks = [];
+    req.on('data', chunk => chunks.push(chunk));
     req.on('end', () => {
+      const body = Buffer.concat(chunks).toString('utf8');
       try {
         const data = JSON.parse(body);
         if (!requireActionPassword(data, res)) return;
@@ -424,7 +427,7 @@ const server = http.createServer((req, res) => {
         res.end(JSON.stringify({ message: 'Device registered successfully', device: newDevice }));
       } catch (err) {
         res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Invalid payload' }));
+        res.end(JSON.stringify({ error: 'Invalid payload: ' + err.message }));
       }
     });
     return;
@@ -432,9 +435,10 @@ const server = http.createServer((req, res) => {
 
   // POST /api/verify - Verify device presence
   if (req.method === 'POST' && pathname === '/api/verify') {
-    let body = '';
-    req.on('data', chunk => { body += chunk.toString(); });
+    const chunks = [];
+    req.on('data', chunk => chunks.push(chunk));
     req.on('end', async () => {
+      const body = Buffer.concat(chunks).toString('utf8');
       try {
         const data = JSON.parse(body);
         const { deviceId, latitude, longitude } = data;
@@ -484,7 +488,7 @@ const server = http.createServer((req, res) => {
         res.end(JSON.stringify({ message: 'Device verification recorded successfully' }));
       } catch (err) {
         res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Invalid payload' }));
+        res.end(JSON.stringify({ error: 'Invalid payload: ' + err.message }));
       }
     });
     return;
@@ -492,9 +496,10 @@ const server = http.createServer((req, res) => {
 
   // POST /api/delete-device - Remove device
   if (req.method === 'POST' && pathname === '/api/delete-device') {
-    let body = '';
-    req.on('data', chunk => { body += chunk.toString(); });
+    const chunks = [];
+    req.on('data', chunk => chunks.push(chunk));
     req.on('end', () => {
+      const body = Buffer.concat(chunks).toString('utf8');
       try {
         const data = JSON.parse(body);
         if (!requireActionPassword(data, res)) return;
@@ -524,7 +529,7 @@ const server = http.createServer((req, res) => {
         res.end(JSON.stringify({ message: 'Device removed successfully.' }));
       } catch (err) {
         res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Invalid payload' }));
+        res.end(JSON.stringify({ error: 'Invalid payload: ' + err.message }));
       }
     });
     return;
@@ -532,9 +537,10 @@ const server = http.createServer((req, res) => {
 
   // POST /api/edit-device - Edit device details
   if (req.method === 'POST' && pathname === '/api/edit-device') {
-    let body = '';
-    req.on('data', chunk => { body += chunk.toString(); });
+    const chunks = [];
+    req.on('data', chunk => chunks.push(chunk));
     req.on('end', () => {
+      const body = Buffer.concat(chunks).toString('utf8');
       try {
         const data = JSON.parse(body);
         if (!requireActionPassword(data, res)) return;
@@ -577,7 +583,7 @@ const server = http.createServer((req, res) => {
         res.end(JSON.stringify({ message: 'Device details updated successfully.' }));
       } catch (err) {
         res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Invalid payload' }));
+        res.end(JSON.stringify({ error: 'Invalid payload: ' + err.message }));
       }
     });
     return;
@@ -598,9 +604,10 @@ const server = http.createServer((req, res) => {
 
   // POST /api/register-asset - Register a new asset
   if (req.method === 'POST' && pathname === '/api/register-asset') {
-    let body = '';
-    req.on('data', chunk => { body += chunk.toString(); });
+    const chunks = [];
+    req.on('data', chunk => chunks.push(chunk));
     req.on('end', () => {
+      const body = Buffer.concat(chunks).toString('utf8');
       try {
         const data = JSON.parse(body);
         const { name, category, serialNumber, location, type, image } = data;
@@ -636,7 +643,7 @@ const server = http.createServer((req, res) => {
         res.end(JSON.stringify({ message: 'Asset registered successfully', asset: newAsset }));
       } catch (err) {
         res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Invalid payload' }));
+        res.end(JSON.stringify({ error: 'Invalid payload: ' + err.message }));
       }
     });
     return;
@@ -644,9 +651,10 @@ const server = http.createServer((req, res) => {
 
   // POST /api/edit-asset - Edit asset details
   if (req.method === 'POST' && pathname === '/api/edit-asset') {
-    let body = '';
-    req.on('data', chunk => { body += chunk.toString(); });
+    const chunks = [];
+    req.on('data', chunk => chunks.push(chunk));
     req.on('end', () => {
+      const body = Buffer.concat(chunks).toString('utf8');
       try {
         const data = JSON.parse(body);
         const { assetId, name, category, serialNumber, location, type, image } = data;
@@ -683,7 +691,7 @@ const server = http.createServer((req, res) => {
         res.end(JSON.stringify({ message: 'Asset updated successfully.' }));
       } catch (err) {
         res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Invalid payload' }));
+        res.end(JSON.stringify({ error: 'Invalid payload: ' + err.message }));
       }
     });
     return;
@@ -691,9 +699,10 @@ const server = http.createServer((req, res) => {
 
   // POST /api/delete-asset - Remove asset
   if (req.method === 'POST' && pathname === '/api/delete-asset') {
-    let body = '';
-    req.on('data', chunk => { body += chunk.toString(); });
+    const chunks = [];
+    req.on('data', chunk => chunks.push(chunk));
     req.on('end', () => {
+      const body = Buffer.concat(chunks).toString('utf8');
       try {
         const data = JSON.parse(body);
         const { assetId } = data;
@@ -720,7 +729,7 @@ const server = http.createServer((req, res) => {
         res.end(JSON.stringify({ message: 'Asset removed successfully.' }));
       } catch (err) {
         res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Invalid payload' }));
+        res.end(JSON.stringify({ error: 'Invalid payload: ' + err.message }));
       }
     });
     return;
@@ -728,9 +737,10 @@ const server = http.createServer((req, res) => {
 
   // POST /api/scan-asset - Scan and check-in asset
   if (req.method === 'POST' && pathname === '/api/scan-asset') {
-    let body = '';
-    req.on('data', chunk => { body += chunk.toString(); });
+    const chunks = [];
+    req.on('data', chunk => chunks.push(chunk));
     req.on('end', () => {
+      const body = Buffer.concat(chunks).toString('utf8');
       try {
         const data = JSON.parse(body);
         const { assetId } = data;
@@ -757,7 +767,7 @@ const server = http.createServer((req, res) => {
         res.end(JSON.stringify({ message: 'Asset scan recorded successfully.', asset: db.assets[index] }));
       } catch (err) {
         res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Invalid payload' }));
+        res.end(JSON.stringify({ error: 'Invalid payload: ' + err.message }));
       }
     });
     return;
