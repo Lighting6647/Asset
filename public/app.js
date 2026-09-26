@@ -283,15 +283,9 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.device-stat-action').forEach(card => {
     card.addEventListener('click', () => openDeviceManagement(card.dataset.status || 'all'));
   });
-  deviceStatusBars.addEventListener('click', event => {
-    const row = event.target.closest('.device-status-row');
-    if (row) openDeviceManagement(row.dataset.status || 'all');
-  });
-  if (deviceActionSummary) deviceActionSummary.addEventListener('click', event => {
-    const row = event.target.closest('.device-action-row');
-    if (row) openDeviceManagement(row.dataset.status || 'all');
-  });
-  if (btnViewDeviceWork) btnViewDeviceWork.addEventListener('click', () => openDeviceManagement('all'));
+  // deviceStatusBars click listener removed to prevent navigating to Monitored Devices
+  // deviceActionSummary click listener removed
+  // btnViewDeviceWork click listener removed to prevent navigating to Monitored Devices
   if (sbAssets) {
     sbAssets.addEventListener('click', () => {
       setActiveSidebar(sbAssets);
@@ -708,11 +702,11 @@ document.addEventListener('DOMContentLoaded', () => {
       ].slice(0, 5);
       if (deviceActionSummary) deviceActionSummary.innerHTML = workItems.length
         ? workItems.map(device => `
-            <button class="device-action-row" data-status="${escapeHtml(device.status)}">
+            <div class="device-action-row" style="cursor: default;" data-status="${escapeHtml(device.status)}">
               <span class="status-indicator ${device.status === 'overdue' ? 'unverified' : 'active'}"></span>
               <div><strong>${escapeHtml(device.userName || device.name || 'ไม่ระบุชื่อ')}</strong><span>${escapeHtml(device.position || 'ไม่ระบุตำแหน่ง')}</span></div>
               <b>${device.status}</b>
-            </button>
+            </div>
           `).join('')
         : '<div class="operations-empty">✓ ไม่มีอุปกรณ์ที่ต้องดำเนินการ</div>';
     }
