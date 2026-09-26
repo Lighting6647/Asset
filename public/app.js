@@ -1,5 +1,22 @@
 document.addEventListener('DOMContentLoaded', () => {
 
+  const btnExportExcel = document.getElementById('cc-btn-export-excel');
+  if (btnExportExcel) {
+    btnExportExcel.addEventListener('click', () => {
+      showToast('📊 กำลังเตรียมข้อมูลเพื่อส่งออกเป็น Excel...', 'info');
+      setTimeout(() => showToast('✅ ดาวน์โหลดข้อมูลสำเร็จ (Demo)', 'success'), 1500);
+    });
+  }
+
+
+  const btnFastAudit = document.getElementById('cc-btn-fast-audit');
+  if (btnFastAudit) {
+    btnFastAudit.addEventListener('click', () => {
+      showToast('⚡ โหมดตรวจนับด่วน (Fast Audit Mode) จะเปิดให้ใช้งานในเวอร์ชันถัดไป!', 'info');
+    });
+  }
+
+
   // Initialize Drag & Drop for Dashboard Panels
   if (typeof Sortable !== 'undefined') {
     const dashboardGrid = document.querySelector('.device-dashboard-grid');
