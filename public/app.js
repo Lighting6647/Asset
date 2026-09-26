@@ -1,4 +1,34 @@
 document.addEventListener('DOMContentLoaded', () => {
+
+  // Initialize Drag & Drop for Dashboard Panels
+  if (typeof Sortable !== 'undefined') {
+    const dashboardGrid = document.querySelector('.device-dashboard-grid');
+    if (dashboardGrid) {
+      Sortable.create(dashboardGrid, {
+        animation: 150,
+        ghostClass: 'sortable-ghost',
+        handle: '.device-dashboard-heading', // Only drag from the header
+        onEnd: function (evt) {
+          console.log('Moved item in grid');
+        }
+      });
+    }
+
+    const overviewPanel = document.getElementById('devices-overview-panel');
+    if (overviewPanel) {
+      Sortable.create(overviewPanel, {
+        animation: 150,
+        ghostClass: 'sortable-ghost',
+        handle: '.section-heading',
+        filter: '.stats-grid', // Don't allow dragging the stats grid itself
+        preventOnFilter: false,
+        onEnd: function (evt) {
+          console.log('Moved section in dashboard');
+        }
+      });
+    }
+  }
+
   // --- DOM Elements ---
   const detectedOsTag = document.getElementById('detected-os-tag');
   const btnToggleView = document.getElementById('btn-toggle-view');
