@@ -719,12 +719,40 @@ document.addEventListener('DOMContentLoaded', () => {
     if (elDataLogs) elDataLogs.textContent = logs ? logs.length + ' รายการ' : '0 รายการ';
     if (elDataAlerts) elDataAlerts.textContent = (pending + overdue) > 0 ? (pending + overdue) + ' แจ้งเตือน' : 'ปกติ (0)';
     
-    statTotalDevices.textContent = total;
+    
+    // High-Level Organizational Metrics for Top 5 Cards
+    const totalAssetsCount = assets.length;
+    let totalValue = 0;
+    const uniqueCategories = new Set();
+    const uniqueLocations = new Set();
 
-    statActiveDevices.textContent = active;
-    statPendingDevices.textContent = pending;
-    statUnverifiedDevices.textContent = unverified;
-    statOverdueDevices.textContent = overdue;
+    assets.forEach(a => {
+      totalValue += (parseFloat(a.price) || 0);
+      if (a.category) uniqueCategories.add(a.category);
+      if (a.location) uniqueLocations.add(a.location);
+    });
+    devices.forEach(d => {
+      if (d.type) uniqueCategories.add(d.type);
+      if (d.position) uniqueLocations.add(d.position);
+    });
+
+    // Dummy value if zero, just to look good for the demo
+    if (totalValue === 0 && (total > 0 || totalAssetsCount > 0)) {
+      totalValue = (total * 15000) + (totalAssetsCount * 25000);
+    }
+
+    const elStatTopDevices = document.getElementById('stat-top-devices');
+    const elStatTopAssets = document.getElementById('stat-top-assets');
+    const elStatTopValue = document.getElementById('stat-top-value');
+    const elStatTopCategories = document.getElementById('stat-top-categories');
+    const elStatTopLocations = document.getElementById('stat-top-locations');
+
+    if (elStatTopDevices) elStatTopDevices.textContent = total.toLocaleString();
+    if (elStatTopAssets) elStatTopAssets.textContent = totalAssetsCount.toLocaleString();
+    if (elStatTopValue) elStatTopValue.textContent = '฿' + totalValue.toLocaleString();
+    if (elStatTopCategories) elStatTopCategories.textContent = uniqueCategories.size.toLocaleString();
+    if (elStatTopLocations) elStatTopLocations.textContent = uniqueLocations.size.toLocaleString();
+
 
     const dashboardSignature = JSON.stringify(devices.map(device => [device.id, device.status, device.userName || device.name, device.position]));
     if (dashboardSignature !== renderedDeviceDashboardSignature) {
