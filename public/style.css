@@ -2252,3 +2252,41 @@ body {
 #command-center-dashboard { display: grid; }
 
 body.active-cc { background: #05080e !important; background-image: none !important; }
+
+.sidebar { display: none !important; }
+.main-content { margin-left: 0 !important; padding: 40px 0 !important; }
+
+.cc-module-card {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  background: rgba(0, 255, 255, 0.03);
+  border: 1px solid rgba(0, 255, 255, 0.15);
+  padding: 15px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.cc-module-card:hover {
+  background: rgba(0, 255, 255, 0.1);
+  border-color: rgba(0, 255, 255, 0.5);
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+.cc-mod-icon {
+  font-size: 24px;
+  color: #00ffff;
+  text-shadow: 0 0 10px rgba(0,255,255,0.5);
+}
+.cc-mod-info h5 {
+  margin: 0 0 4px 0;
+  color: #fff;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+}
+.cc-mod-info span {
+  color: #aacad2;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}

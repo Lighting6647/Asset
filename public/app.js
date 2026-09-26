@@ -2786,6 +2786,17 @@ if(typeof window.renderLogs === 'function') {
 
 /* COMMAND CENTER BINDING */
 
+  bind('cc-btn-devices-reg', 'sb-devices-registered');
+  bind('cc-btn-assets-reg', 'sb-assets-registered');
+  bind('cc-btn-scan', 'sb-scan-qr');
+  bind('cc-btn-alerts', 'sb-alert-center');
+  bind('cc-btn-logs', 'sb-activity-log');
+  bind('cc-btn-ass-analytics', 'sb-asset-analytics');
+  bind('cc-btn-reports-dev', 'sb-export-devices-pdf');
+  bind('cc-btn-reports-ass', 'sb-export-assets-pdf');
+  bind('cc-btn-settings', 'sb-settings');
+
+
 function updateCommandCenterData() {
   const devices = window.devicesData || [];
   const assets = window.assetsData || [];

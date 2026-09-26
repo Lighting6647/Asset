@@ -395,22 +395,82 @@
         </div>
 
         <!-- Navigation -->
+        
         <div class="cc-panel col-12">
-          <h4 class="cc-title"><div class="title-dot"></div>System Controls/h4>
-          <div class="cc-nav">
-            <button class="cc-btn" id="cc-btn-assets">Assets Database</button>
-            <button class="cc-btn" id="cc-btn-scan">Scan QR / Barcode</button>
-            <button class="cc-btn" id="cc-btn-alerts">Alerts</button>
-            <button class="cc-btn" id="cc-btn-logs">Audit Logs</button>
-            <button class="cc-btn" id="cc-btn-reports">Reports (Assets)</button>
+          <h4 class="cc-title"><div class="title-dot"></div>System Control Modules</h4>
+          <div class="cc-modules-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; margin-top: 15px;">
+            
+            <div class="cc-module-card" id="cc-btn-devices-reg">
+              <div class="cc-mod-icon">📱</div>
+              <div class="cc-mod-info">
+                <h5>ข้อมูลอุปกรณ์ (Devices)</h5>
+                <span>Devices Database</span>
+              </div>
+            </div>
 
-            <button class="cc-btn" id="cc-btn-devices-reg">อุปกรณ์</button>
-            <button class="cc-btn" id="cc-btn-assets-reg">
-ทรัพย์สิน</button>
-            <button class="cc-btn" id="cc-btn-ass-analytics">
-วิเคราะห์</button>
-            <button class="cc-btn" id="cc-btn-reports-dev">รายงานอุปกรณ์</button>
-            <button class="cc-btn" id="cc-btn-settings">ตั้งค่า</button>
+            <div class="cc-module-card" id="cc-btn-assets-reg">
+              <div class="cc-mod-icon">📋</div>
+              <div class="cc-mod-info">
+                <h5>ข้อมูลทรัพย์สิน (Assets)</h5>
+                <span>Assets Database</span>
+              </div>
+            </div>
+
+            <div class="cc-module-card" id="cc-btn-scan">
+              <div class="cc-mod-icon" style="color: #00ff66;">📷</div>
+              <div class="cc-mod-info">
+                <h5 style="color: #00ff66;">สแกน QR / Barcode</h5>
+                <span>Quick Scan Tool</span>
+              </div>
+            </div>
+
+            <div class="cc-module-card" id="cc-btn-alerts">
+              <div class="cc-mod-icon" style="color: #ff0033;">🔔</div>
+              <div class="cc-mod-info">
+                <h5 style="color: #ff0033;">ศูนย์แจ้งเตือน (Alerts)</h5>
+                <span>Alerts & Notifications</span>
+              </div>
+            </div>
+
+            <div class="cc-module-card" id="cc-btn-logs">
+              <div class="cc-mod-icon">🕘</div>
+              <div class="cc-mod-info">
+                <h5>ประวัติการทำงาน</h5>
+                <span>System Audit Logs</span>
+              </div>
+            </div>
+
+            <div class="cc-module-card" id="cc-btn-ass-analytics">
+              <div class="cc-mod-icon">📊</div>
+              <div class="cc-mod-info">
+                <h5>วิเคราะห์ทรัพย์สิน</h5>
+                <span>Analytics Dashboard</span>
+              </div>
+            </div>
+
+            <div class="cc-module-card" id="cc-btn-reports-dev">
+              <div class="cc-mod-icon">📄</div>
+              <div class="cc-mod-info">
+                <h5>รายงานอุปกรณ์</h5>
+                <span>Device Reports</span>
+              </div>
+            </div>
+
+            <div class="cc-module-card" id="cc-btn-reports-ass">
+              <div class="cc-mod-icon">📑</div>
+              <div class="cc-mod-info">
+                <h5>รายงานทรัพย์สิน</h5>
+                <span>Asset Reports</span>
+              </div>
+            </div>
+
+            <div class="cc-module-card" id="cc-btn-settings">
+              <div class="cc-mod-icon" style="color: #ffcc00;">⚙️</div>
+              <div class="cc-mod-info">
+                <h5 style="color: #ffcc00;">ตั้งค่าระบบ</h5>
+                <span>System Settings</span>
+              </div>
+            </div>
 
           </div>
         </div>
