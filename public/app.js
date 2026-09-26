@@ -2871,7 +2871,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   bind('cc-btn-alerts', 'sb-alert-center');
   bind('cc-btn-logs', 'sb-activity-log');
   bind('cc-btn-ass-analytics', 'sb-asset-analytics');
-  bind('cc-btn-reports-dev', 'sb-export-devices-pdf');
+  bind('cc-btn-assets-main', 'sb-assets');
   bind('cc-btn-reports-ass', 'sb-export-assets-pdf');
   bind('cc-btn-settings', 'sb-settings');
 
