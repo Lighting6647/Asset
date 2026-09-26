@@ -2701,6 +2701,10 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
 });
+
+
+/* ICLOUD WIDGET DATA BINDING */
+
 function updateICloudDashboardData() {
   const devices = window.devicesData || [];
   const assets = window.assetsData || [];
@@ -2725,14 +2729,14 @@ function updateICloudDashboardData() {
 
     let html = '<div class="mail-col">';
     if (nearCycle.length === 0) {
-      html += '<div class="mail-item"><div class="mail-item-header"><h4>System Ready</h4><span>วันนี้</span></div><p>ไม่มีอุปกรณ์ที่ต้องตรวจสอบเร็วๆนี้</p></div>';
+      html += '<div class="mail-item"><div class="mail-item-header"><h4>System Ready</h4><span>วันนี้</span></div><p>ไม่มีอุปกรณ์ที่ต้องตรวจสอบเร็วๆ นี้</p></div>';
     } else {
       nearCycle.slice(0,3).forEach(d => {
         html += '<div class="mail-item"><div class="mail-item-header"><h4>'+d.name+'</h4><span>แจ้งเตือน</span></div><p>ถึงกำหนดตรวจสอบ (รอบ '+d.verifyCycle+' วัน)</p></div>';
       });
     }
     html += '</div><div class="mail-col" style="border-left: 1px solid rgba(255,255,255,0.05); padding-left: 20px;">';
-    html += '<div class="mail-item" style="border:none;"><p style="margin-top:20px; text-align:center; color:rgba(255,255,255,0.3);">การแจ้งเตือนทั้งหมด</p></div></div>';
+    html += '<div class="mail-item" style="border:none;"><p style="margin-top:20px; text-align:center; color:rgba(255,255,255,0.3);">การแซ้งเตือนทั้งหมฐ</p></div></div>';
     alertsContainer.innerHTML = html;
   }
 
@@ -2743,7 +2747,7 @@ function updateICloudDashboardData() {
       html += '<div class="note-item"><h4>System</h4><p>ไม่มีประวัติการทำรายการ</p></div>';
     } else {
       logs.slice(0,3).forEach(l => {
-        html += '<div class="note-item"><h4>'+(l.action||'Action')+'</h4><p>'+new Date(l.timestamp).toLocaleDateString()+' - '+(l.details||'')+'</p></div>';
+        html += '<div class="note-item"><h4>'+(l.action||'Action')+'</h4><p>'+new Date(l.timestamp).localeDateString()+' - '+(l.details||'')+'</p></div>';
       });
     }
     html += '</div><div class="notes-col" style="border-left: 1px solid rgba(255,255,255,0.05); padding-left: 20px;">';
