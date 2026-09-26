@@ -2890,7 +2890,7 @@ document.addEventListener('DOMContentLoaded', () => {
     backBtn.parentNode.replaceChild(newBtn, backBtn);
     newBtn.addEventListener('click', () => {
       document.getElementById('icloud-view-container')?.classList.add('hidden');
-      document.getElementById('command-center-dashboard')?.classList.remove('hidden');
+      document.getElementById('command-center-dashboard')?.classList.remove('hidden'); if(typeof mapInstance !== 'undefined' && mapInstance) setTimeout(()=>mapInstance.invalidateSize(), 50);
       newBtn.classList.add('hidden');
     });
   }
