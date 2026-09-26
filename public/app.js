@@ -2853,6 +2853,11 @@ document.addEventListener('DOMContentLoaded', ()=>{
         const targetEl = document.getElementById(target);
         if (targetEl) targetEl.click();
         
+        // If it's just a PDF export, do NOT hide the dashboard!
+        if (target === 'sb-export-devices-pdf' || target === 'sb-export-assets-pdf') {
+           return;
+        }
+        
         // Foolproof visibility toggle
         const ccDashboard = document.getElementById('command-center-dashboard');
         const viewContainer = document.getElementById('icloud-view-container');
@@ -2871,7 +2876,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   bind('cc-btn-alerts', 'sb-alert-center');
   bind('cc-btn-logs', 'sb-activity-log');
   bind('cc-btn-ass-analytics', 'sb-asset-analytics');
-  bind('cc-btn-assets-main', 'sb-assets');
+  bind('cc-btn-reports-dev', 'sb-export-devices-pdf');
   bind('cc-btn-reports-ass', 'sb-export-assets-pdf');
   bind('cc-btn-settings', 'sb-settings');
 
