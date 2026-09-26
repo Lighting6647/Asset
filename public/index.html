@@ -189,23 +189,25 @@
         </div>
       </section>
 
-      <section class="device-dashboard-grid">
-        <article class="glass-card device-dashboard-panel">
+      <!-- PROGRESS BARS (FULL WIDTH) -->
+      <section style="margin-top: 1.5rem; margin-bottom: 1.5rem;">
+        <article class="glass-card device-dashboard-panel" style="width: 100%;">
           <div class="device-dashboard-heading"><div><h2>ภาพรวมสถานะอุปกรณ์</h2><p>สัดส่วนจากอุปกรณ์ทั้งหมดในระบบ</p></div><strong id="device-health-percent">0%</strong></div>
           <div id="device-status-bars" class="device-status-bars"></div>
         </article>
-        
-        <article class="glass-card device-dashboard-panel">
-          <div class="device-dashboard-heading"><div><h2>รายการที่ต้องดำเนินการ</h2><p>เรียงตามความสำคัญล่าสุด</p></div><div id="btn-view-device-work" class="btn btn-secondary" style="cursor: default;">สถานะการทำงาน</div></div>
-          <div id="device-action-summary" class="device-action-summary"></div>
-        </article>
+      </section>
 
-      <!-- COMMAND CENTER MODULES -->
-      <section style="margin-top: 2rem; margin-bottom: 2rem;">
-        <h2 style="font-family: 'Outfit', sans-serif; font-size: 1.25rem; font-weight: 600; color: #fff; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-          <span>⚡</span> โมดูลระบบ (System Control Modules)
-        </h2>
-        <div class="cc-modules-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 15px;">
+      <!-- COMMAND CENTER MODULES (FULL WIDTH) -->
+      <section style="margin-top: 1.5rem; margin-bottom: 2rem;">
+        <article class="glass-card device-dashboard-panel" style="padding: 1.5rem; width: 100%;">
+          <div class="device-dashboard-heading" style="margin-bottom: 1rem;">
+            <div>
+              <h2 style="font-family: 'Outfit', sans-serif; font-weight: 600; color: #fff; display: flex; align-items: center; gap: 0.5rem;">
+                <span>⚡</span> โมดูลระบบ (System Control Modules)
+              </h2>
+            </div>
+          </div>
+          <div class="cc-modules-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 15px;">
             
             <div class="cc-module-card" id="cc-btn-devices-reg">
               <div class="cc-mod-icon">📱</div>
@@ -270,10 +272,11 @@
                 <span style="color: var(--text-muted);">System Settings</span>
               </div>
             </div>
-            
-        </div>
+
+          </div>
+        </article>
       </section>
-</section>
+
       </div>
       </div> <!-- End devices-section-content -->
 
