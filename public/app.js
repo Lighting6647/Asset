@@ -2782,3 +2782,76 @@ if(typeof window.renderLogs === 'function') {
     updateICloudDashboardData();
   };
 }
+
+
+/* COMMAND CENTER BINDING */
+
+function updateCommandCenterData() {
+  const devices = window.devicesData || [];
+  const assets = window.assetsData || [];
+  const logs = window.logsData || [];
+  
+  const assetCount = document.getElementById('cc-asset-count');
+  if (assetCount) assetCount.innerText = assets.length;
+  
+  const today = new Date();
+  const nearCycle = devices.filter(d => {
+    if(!d.verifyCycle || !d.lastVerified) return false;
+    const last = new Date(d.lastVerified);
+    const diff = Math.floor((today - last) / (1000 * 60 * 60 * 24));
+    return diff >= (d.verifyCycle - 3);
+  });
+  
+  const alertCount = document.getElementById('cc-alert-count');
+  if (alertCount) alertCount.innerText = nearCycle.length;
+  
+  const tbody = document.getElementById('cc-device-table');
+  if (tbody) {
+    let html = '';
+    if(devices.length === 0) html = '<tr><td colspan="4">No active nodes found</td></tr>';
+    else {
+      devices.slice(0,5).forEach(d => {
+        const isAlert = nearCycle.includes(d);
+        const statusClass = isAlert ? 'alert' : 'active';
+        const statusText = isAlert ? 'AUDIT REQ' : 'ONLINE';
+        html += `<tr><td>${d.assetNumber||'UNKNOWN'}</td><td>${d.name}</td><td>${d.department||'-'}</td><td><span class="cc-status ${statusClass}">${statusText}</span></td></tr>`;
+      });
+    }
+    tbody.innerHTML = html;
+  }
+  
+  const logContainer = document.getElementById('cc-log-container');
+  if (logContainer) {
+    let html = '';
+    if(logs.length === 0) html = '<span style="color:#aacad2;">No recent activity</span>';
+    else {
+      logs.slice(0,5).forEach*l => {
+        html += `<div class="cc-log-item">
+          <span class="cc-log-action">${l.action||'ACTION'} - ${l.details||''}</span>
+          <span class="cc-log-time">${new Date(l.timestamp).toLocaleDateString()}</span>
+        </div>`;
+      });
+    }
+    logContainer.innerHTML = html;
+  }
+}
+
+// Override the old updateICloudDashboardData so it does both or just this
+let origJs = window.updateICloudDashboardData;
+window.updateICloudDashboardData = function() {
+  if(origJs) origJs();
+  updateCommandCenterData();
+}
+
+// Bind buttons
+document.addEventListener('DOMContentLoaded', ()=>{
+  const bind = (id, target) => {
+    const el = document.getElementById(id);
+    if(el) el.onclick = () => document.getElementById(target)?.click();
+  }
+  bind('cc-btn-assets', 'sb-assets');
+  bind('cc-btn-scan', 'sb-scan');
+  bind('cc-btn-alerts', 'sb-alerts');
+  bind('cc-btn-logs', 'sb-log');
+  bind('cc-btn-reports', 'sb-reports');
+});

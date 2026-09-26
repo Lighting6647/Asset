@@ -370,6 +370,69 @@
           <div class="bottom-dots">...</div>
         </div>
       </div>
+      
+      
+      <!-- COMMAND CENTER DASHBOARD (Option 3) -->
+      <div id="command-center-dashboard" class="cc-dashboard">
+        
+        <!-- Status -->
+        <div class="cc-panel col-4">
+          <h4 class="cc-title"><div class="title-dot"></div>Network Status</h4>
+          <div class="cc-value green">ONLINE</div>
+          <p style="color:#aacad2; font-size:12px;">All systems operational</p>
+        </div>
+
+        <div class="cc-panel col-4">
+          <h4 class="cc-title"><div class="title-dot"></div>Total Assets</h4>
+          <div class="cc-value" id="cc-asset-count">0</div>
+          <p style="color:#aacad2; font-size:12px;">Registered Devices & Equipment</p>
+        </div>
+
+        <div class="cc-panel col-4">
+          <h4 class="cc-title" style="color:#ff0033;"><div class="title-dot" style="background:#ff0033; box-shadow: 0 0 8px #ff0033;"></div>Arrears / Alerts</h4>
+          <div class="cc-value red" id="cc-alert-count">0</div>
+          <p style="color:#aacad2; font-size:12px;">Devices needing immediate audit</p>
+        </div>
+
+        <!-- Navigation -->
+        <div class="cc-panel col-12">
+          <h4 class="cc-title"><div class="title-dot"></div>System Controls/h4>
+          <div class="cc-nav">
+            <button class="cc-btn" id="cc-btn-assets">Assets Database</button>
+            <button class="cc-btn" id="cc-btn-scan">Scan QR / Barcode</button>
+            <button class="cc-btn" id="cc-btn-alerts">Alerts</button>
+            <button class="cc-btn" id="cc-btn-logs">Audit Logs</button>
+            <button class="cc-btn" id="cc-btn-reports">Generate Report</button>
+          </div>
+        </div>
+
+        <!-- Device Table -->
+        <div class="cc-panel col-8">
+          <h4 class="cc-title"><div class="title-dot"></div>Active Nodes Monitoring</h4>
+          <table class="cc-table">
+            <thead>
+              <tr>
+                <th>Node ID</th>
+                <th>Description</th>
+                <th>Department</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="cc-device-table">
+              <!-- Dynamic -->
+              <tr><td colspan="4">Initializing...</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Threat / Audit Log -->
+        <div class="cc-panel col-4">
+          <h4 class="cc-title" style="color:#ffcc00;"><div class="title-dot" style="background:#ffcc00; box-shadow: 0 0 8px #ffcc00;"></div>Analytics & Log</h4>
+          <div id="cc-log-container" style="margin-top:15px;">
+            <!-- Dynamic -->
+          </div>
+        </div>
+      </div>
       <!-- DASHBOARD BACK BUTTON FOR ICLOUD VIEWS -->
       <button id="btn-icloud-back" class="btn btn-secondary hidden" style="margin-bottom: 1rem; border-radius: 20px; backdrop-filter: blur(10px); background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:0.5rem;"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
