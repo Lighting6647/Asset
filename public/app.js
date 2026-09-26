@@ -693,7 +693,7 @@ document.addEventListener('DOMContentLoaded', () => {
       deviceStatusBars.innerHTML = statusRows.map(([label, count, tone]) => `
         <div class="device-status-row" style="cursor: default;" data-status="${label.toLowerCase()}">
           <span>${label}</span><div><i class="${tone}" style="width:${total ? Math.round((count / total) * 100) : 0}%"></i></div><strong>${count}</strong>
-        </button>
+        </div>
       `).join('');
 
       const workItems = [
