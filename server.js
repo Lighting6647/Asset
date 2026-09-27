@@ -318,7 +318,7 @@ const server = http.createServer((req, res) => {
     const chunks = [];
     req.on('data', chunk => chunks.push(chunk));
     req.on('end', () => {
-      const body = Buffer.concat(chunks).toString('utf8');
+      const body = chunks.join('');
       try {
         const data = JSON.parse(body);
         if (!requireActionPassword(data, res)) return;
@@ -337,7 +337,7 @@ const server = http.createServer((req, res) => {
     const chunks = [];
     req.on('data', chunk => chunks.push(chunk));
     req.on('end', () => {
-      const body = Buffer.concat(chunks).toString('utf8');
+      const body = chunks.join('');
       try {
         const data = JSON.parse(body);
         if (!requireActionPassword(data, res)) return;
@@ -391,7 +391,7 @@ const server = http.createServer((req, res) => {
     const chunks = [];
     req.on('data', chunk => chunks.push(chunk));
     req.on('end', () => {
-      const body = Buffer.concat(chunks).toString('utf8');
+      const body = chunks.join('');
       try {
         const data = JSON.parse(body);
         if (!requireActionPassword(data, res)) return;
@@ -442,7 +442,7 @@ const server = http.createServer((req, res) => {
     const chunks = [];
     req.on('data', chunk => chunks.push(chunk));
     req.on('end', async () => {
-      const body = Buffer.concat(chunks).toString('utf8');
+      const body = chunks.join('');
       try {
         const data = JSON.parse(body);
         const { deviceId, latitude, longitude } = data;
@@ -503,7 +503,7 @@ const server = http.createServer((req, res) => {
     const chunks = [];
     req.on('data', chunk => chunks.push(chunk));
     req.on('end', () => {
-      const body = Buffer.concat(chunks).toString('utf8');
+      const body = chunks.join('');
       try {
         const data = JSON.parse(body);
         if (!requireActionPassword(data, res)) return;
@@ -544,7 +544,7 @@ const server = http.createServer((req, res) => {
     const chunks = [];
     req.on('data', chunk => chunks.push(chunk));
     req.on('end', () => {
-      const body = Buffer.concat(chunks).toString('utf8');
+      const body = chunks.join('');
       try {
         const data = JSON.parse(body);
         if (!requireActionPassword(data, res)) return;
@@ -611,7 +611,7 @@ const server = http.createServer((req, res) => {
     const chunks = [];
     req.on('data', chunk => chunks.push(chunk));
     req.on('end', () => {
-      const body = Buffer.concat(chunks).toString('utf8');
+      const body = chunks.join('');
       try {
         const data = JSON.parse(body);
         const { name, category, serialNumber, location, type, image } = data;
@@ -658,7 +658,7 @@ const server = http.createServer((req, res) => {
     const chunks = [];
     req.on('data', chunk => chunks.push(chunk));
     req.on('end', () => {
-      const body = Buffer.concat(chunks).toString('utf8');
+      const body = chunks.join('');
       try {
         const data = JSON.parse(body);
         const { assetId, name, category, serialNumber, location, type, image } = data;
@@ -706,7 +706,7 @@ const server = http.createServer((req, res) => {
     const chunks = [];
     req.on('data', chunk => chunks.push(chunk));
     req.on('end', () => {
-      const body = Buffer.concat(chunks).toString('utf8');
+      const body = chunks.join('');
       try {
         const data = JSON.parse(body);
         const { assetId } = data;
@@ -744,7 +744,7 @@ const server = http.createServer((req, res) => {
     const chunks = [];
     req.on('data', chunk => chunks.push(chunk));
     req.on('end', () => {
-      const body = Buffer.concat(chunks).toString('utf8');
+      const body = chunks.join('');
       try {
         const data = JSON.parse(body);
         const { assetId } = data;
