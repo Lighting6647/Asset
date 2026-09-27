@@ -1218,6 +1218,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="asset-card-details">
           <div><span>หมายเลข S/N</span><strong>${escapeHtml(asset.sn || asset.serialNumber || '-')}</strong></div>
           <div><span>สถานที่ตั้ง</span><strong>${escapeHtml(asset.location || '-')}</strong></div>
+          <div><span>วันที่บันทึก</span><strong>${asset.registeredAt ? new Date(asset.registeredAt).toLocaleString('th-TH') : '-'}</strong></div>
           <div><span>ตรวจสอบล่าสุด</span><strong class="status-cell">
             <span class="status-indicator ${asset.lastScannedAt ? 'active' : 'unverified'}"></span>
             ${lastScannedFormatted}
