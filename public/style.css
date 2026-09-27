@@ -2179,3 +2179,35 @@ body {
 .cc-mod-info span {
   font-size: 0.7rem;
 }
+
+/* Additional Responsive Fixes */
+@media (max-width: 768px) {
+  /* Make the 5th stat card span full width on mobile to avoid empty spaces */
+  .stats-grid > div:last-child:nth-child(odd) {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 450px) {
+  /* On very small phones, ensure asset details stack nicely */
+  .asset-card-details > div {
+    grid-template-columns: 1fr !important;
+    gap: 0.15rem !important;
+    margin-bottom: 0.5rem;
+  }
+  .asset-card-details span {
+    font-size: 0.75rem !important;
+    color: var(--text-color) !important;
+    opacity: 0.7;
+  }
+  .asset-card-details strong {
+    font-size: 0.95rem !important;
+  }
+}
+
+@media (max-width: 380px) {
+  /* Prevent cc-modules-grid from being too squeezed on older iPhones (iPhone SE) */
+  .cc-modules-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
