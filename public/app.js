@@ -720,6 +720,57 @@ document.addEventListener('DOMContentLoaded', () => {
     if (elDataAlerts) elDataAlerts.textContent = (pending + overdue) > 0 ? (pending + overdue) + ' แจ้งเตือน' : 'ปกติ (0)';
     
     
+    
+    // Function to estimate market value based on device/asset name
+    function estimateMarketValue(name) {
+      if (!name) return 0;
+      const n = name.toLowerCase();
+      
+      // Apple Devices
+      if (n.includes('macbook pro')) return 70000;
+      if (n.includes('macbook air')) return 35000;
+      if (n.includes('macbook')) return 40000;
+      if (n.includes('imac')) return 50000;
+      if (n.includes('mac mini')) return 25000;
+      
+      if (n.includes('iphone 15 pro max')) return 45000;
+      if (n.includes('iphone 15 pro')) return 40000;
+      if (n.includes('iphone 15')) return 30000;
+      if (n.includes('iphone 14 pro max')) return 35000;
+      if (n.includes('iphone 14 pro')) return 30000;
+      if (n.includes('iphone 14')) return 25000;
+      if (n.includes('iphone 13')) return 20000;
+      if (n.includes('iphone 12')) return 15000;
+      if (n.includes('iphone')) return 12000;
+      
+      if (n.includes('ipad pro')) return 35000;
+      if (n.includes('ipad air')) return 22000;
+      if (n.includes('ipad mini')) return 18000;
+      if (n.includes('ipad')) return 15000;
+      
+      // Computers & IT
+      if (n.includes('server') || n.includes('เซิร์ฟเวอร์')) return 150000;
+      if (n.includes('laptop') || n.includes('notebook') || n.includes('แล็ปท็อป') || n.includes('โน้ตบุ๊ก')) return 25000;
+      if (n.includes('pc') || n.includes('คอมพิวเตอร์') || n.includes('desktop')) return 20000;
+      if (n.includes('monitor') || n.includes('จอ')) return 6000;
+      if (n.includes('printer') || n.includes('เครื่องพิมพ์') || n.includes('เครื่องปริ้น')) return 4500;
+      if (n.includes('router') || n.includes('switch') || n.includes('เราเตอร์')) return 3000;
+      if (n.includes('mouse') || n.includes('keyboard') || n.includes('เมาส์') || n.includes('คีย์บอร์ด')) return 1500;
+      if (n.includes('ups') || n.includes('เครื่องสำรองไฟ')) return 3500;
+      if (n.includes('camera') || n.includes('กล้อง')) return 20000;
+      if (n.includes('projector') || n.includes('โปรเจคเตอร์')) return 15000;
+      
+      // Office & Furniture
+      if (n.includes('chair') || n.includes('เก้าอี้')) return 2500;
+      if (n.includes('desk') || n.includes('table') || n.includes('โต๊ะ')) return 4000;
+      if (n.includes('cabinet') || n.includes('ตู้')) return 5000;
+      if (n.includes('air conditioner') || n.includes('แอร์') || n.includes('เครื่องปรับอากาศ')) return 20000;
+      if (n.includes('tv') || n.includes('ทีวี') || n.includes('โทรทัศน์')) return 12000;
+      
+      // Default fallback
+      return 5000; 
+    }
+
     // High-Level Organizational Metrics for Top 5 Cards
     const totalAssetsCount = assets.length;
     let totalValue = 0;
@@ -727,19 +778,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const uniqueLocations = new Set();
 
     assets.forEach(a => {
-      totalValue += (parseFloat(a.price) || 0);
+      let val = parseFloat(a.price);
+      if (isNaN(val) || val === 0) {
+        val = estimateMarketValue(a.name);
+      }
+      totalValue += val;
       if (a.category) uniqueCategories.add(a.category);
       if (a.location) uniqueLocations.add(a.location);
     });
+    
     devices.forEach(d => {
+      let val = estimateMarketValue(d.name || d.userName);
+      totalValue += val;
       if (d.type) uniqueCategories.add(d.type);
       if (d.position) uniqueLocations.add(d.position);
     });
 
-    // Dummy value if zero, just to look good for the demo
-    if (totalValue === 0 && (total > 0 || totalAssetsCount > 0)) {
-      totalValue = (total * 15000) + (totalAssetsCount * 25000);
-    }
 
     const elStatTopDevices = document.getElementById('stat-top-devices');
     const elStatTopAssets = document.getElementById('stat-top-assets');
