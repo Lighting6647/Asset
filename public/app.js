@@ -1776,7 +1776,7 @@ document.addEventListener('DOMContentLoaded', () => {
           console.warn('Geolocation failed or denied:', error);
           sendVerification(null, null);
         },
-        { enableHighAccuracy: true, timeout: 6000 }
+        { enableHighAccuracy: false, timeout: 8000, maximumAge: 60000 }
       );
     } else {
       sendVerification(null, null);
@@ -2835,7 +2835,7 @@ document.addEventListener('DOMContentLoaded', () => {
           pickerMap.setView([lat, lng], 16);
           pickerMarker = L.marker([lat, lng]).addTo(pickerMap);
           await reverseGeocodeNominatim(lat, lng);
-        }, () => {});
+        }, () => {}, { enableHighAccuracy: false, maximumAge: 60000 });
       }
     }, 100);
   }
