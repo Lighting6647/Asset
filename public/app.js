@@ -573,8 +573,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Dark-mode Map Tiles (CartoDB Dark Matter)
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
-      subdomains: 'abcd',
+      attribution: '&copy; OpenStreetMap contributors',
+      
       maxZoom: 20,
       updateWhenZooming: false,
       keepBuffer: 3

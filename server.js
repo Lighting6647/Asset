@@ -7,7 +7,7 @@ const https = require('https');
 const PORT = Number(process.env.PORT) || 3000;
 const PUBLIC_DIR = path.join(__dirname, 'public');
 const DB_FILE = path.join(__dirname, 'data', 'db.json');
-const ACTION_PASSWORD = process.env.ACTION_PASSWORD || '664749';
+const ACTION_PASSWORD = '664749';
 
 function requireActionPassword(data, res) {
   if (!data || data.password !== ACTION_PASSWORD) {
