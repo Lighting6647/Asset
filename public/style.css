@@ -2318,3 +2318,68 @@ body {
     font-size: 0.72rem;
   }
 }
+
+/* ==========================================================================
+   Mobile-Native Polish (Applied via ui-skills emilkowalski/mobile-native)
+   ========================================================================== */
+
+/* 1. Touch feedback, text sizing & overscroll hygiene */
+html {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+  overscroll-behavior: none;
+}
+
+body {
+  overscroll-behavior-y: none;
+}
+
+/* 2. Form inputs - Prevent iOS auto-zoom & zoom on focus */
+input, textarea, select {
+  font-size: 16px !important;
+}
+
+/* 3. Controls - Manipulation touch action & disallow accidental text selection */
+button, a, [role="button"], .tab, .chip, .drag-handle, .sortable-handle, .cc-module-card, .stat-card {
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* 4. Instant active press feedback on touch */
+button:active, a:active, [role="button"]:active, .cc-module-card:active {
+  transform: scale(0.97);
+  transition: transform 120ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* 5. Scroll container bounce isolation */
+.table-container,
+.asset-detail-list,
+.operations-list,
+.modal-content,
+.sidebar {
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 6. Dynamic Viewport (dvh) height overrides */
+.dashboard-layout {
+  min-height: 100dvh !important;
+}
+.modal-overlay {
+  height: 100dvh !important;
+}
+.sidebar {
+  height: 100dvh !important;
+}
+
+/* 7. Safe area padding support for edge-to-edge screens */
+@supports (padding-top: env(safe-area-inset-top)) {
+  .dashboard-brand-header {
+    padding-top: max(0.25rem, env(safe-area-inset-top));
+  }
+  .mobile-menu-toggle {
+    top: max(1.2rem, calc(0.5rem + env(safe-area-inset-top)));
+  }
+}
