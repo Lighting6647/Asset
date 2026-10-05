@@ -2330,6 +2330,93 @@ html {
   overscroll-behavior: none;
 }
 
+/* ==========================================================================
+   Theme: Apple Glass — Sunset Orange
+   Warm charcoal surfaces with amber/coral accents.
+   ========================================================================== */
+
+:root {
+  --bg-color: #160f0d;
+  --panel-bg: rgba(42, 27, 22, 0.76);
+  --border-color: rgba(255, 210, 176, 0.13);
+  --border-hover: rgba(251, 146, 60, 0.34);
+  --primary-color: #f59e0b;
+  --primary-glow: rgba(245, 158, 11, 0.28);
+  --secondary-color: #f97316;
+  --secondary-glow: rgba(249, 115, 22, 0.24);
+  --text-primary: #fffaf5;
+  --text-secondary: #d7c0b4;
+  --text-muted: #a9897b;
+}
+
+body {
+  background:
+    radial-gradient(circle at 7% 0%, rgba(249, 115, 22, 0.2), transparent 33rem),
+    radial-gradient(circle at 92% 9%, rgba(245, 158, 11, 0.13), transparent 30rem),
+    radial-gradient(circle at 58% 100%, rgba(190, 73, 32, 0.1), transparent 34rem),
+    linear-gradient(145deg, #120c0b 0%, #1b1210 48%, #241713 100%) !important;
+}
+
+.glass-card {
+  background: linear-gradient(145deg, rgba(54, 35, 28, 0.88), rgba(29, 19, 17, 0.9));
+  border-color: rgba(255, 207, 167, 0.14);
+  box-shadow: 0 18px 48px rgba(15, 7, 4, 0.34), inset 0 1px rgba(255, 232, 214, 0.035);
+  backdrop-filter: blur(26px) saturate(135%);
+  -webkit-backdrop-filter: blur(26px) saturate(135%);
+}
+
+.stat-card {
+  border-top-color: rgba(251, 146, 60, 0.38);
+}
+
+.stat-title,
+.device-dashboard-heading p,
+.brand-sub-badge {
+  color: #cbb2a6 !important;
+}
+
+.brand-icon-wrapper {
+  background: linear-gradient(135deg, #f59e0b 0%, #f97316 54%, #ef4444 100%);
+  box-shadow: 0 10px 28px -5px rgba(249, 115, 22, 0.52);
+}
+
+.brand-name-secondary {
+  background: linear-gradient(135deg, #fcd34d 0%, #fb923c 55%, #f87171 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.sidebar {
+  background:
+    radial-gradient(circle at 12% 4%, rgba(249, 115, 22, 0.22), transparent 28%),
+    radial-gradient(circle at 94% 45%, rgba(245, 158, 11, 0.1), transparent 34%),
+    linear-gradient(155deg, rgba(52, 31, 25, 0.92), rgba(24, 15, 14, 0.96));
+  border-right-color: rgba(255, 207, 167, 0.16);
+  box-shadow: 18px 0 55px rgba(16, 7, 4, 0.44), inset -1px 0 rgba(255, 229, 204, 0.04);
+}
+
+.sidebar-menu-item:hover,
+.sidebar-submenu-item:hover,
+.sidebar-menu-item.active {
+  border-color: rgba(251, 146, 60, 0.34);
+}
+
+.sidebar-menu-item.active {
+  background: linear-gradient(135deg, rgba(249, 115, 22, 0.24), rgba(245, 158, 11, 0.12));
+  box-shadow: inset 0 1px rgba(255, 226, 202, 0.08), 0 10px 24px rgba(44, 18, 6, 0.25);
+}
+
+.cc-module-card:hover,
+.device-status-row:hover {
+  background: rgba(249, 115, 22, 0.12);
+  border-color: rgba(251, 146, 60, 0.3);
+}
+
+::selection {
+  background: rgba(249, 115, 22, 0.34);
+  color: #fffaf5;
+}
+
 body {
   overscroll-behavior-y: none;
 }
@@ -2382,4 +2469,133 @@ button:active, a:active, [role="button"]:active, .cc-module-card:active {
   .mobile-menu-toggle {
     top: max(1.2rem, calc(0.5rem + env(safe-area-inset-top)));
   }
+}
+
+/* ==========================================================================
+   2026 Dashboard clarity refresh
+   Keeps the existing dark/glass identity while improving navigation,
+   readability and responsive hierarchy.
+   ========================================================================== */
+
+body {
+  background:
+    radial-gradient(circle at 8% 0%, rgba(99, 102, 241, 0.2), transparent 34rem),
+    radial-gradient(circle at 92% 12%, rgba(14, 165, 233, 0.12), transparent 30rem),
+    linear-gradient(145deg, #080d1b 0%, #0b1222 48%, #11182a 100%) !important;
+  background-attachment: fixed !important;
+}
+
+.glass-card {
+  background: linear-gradient(145deg, rgba(20, 29, 49, 0.92), rgba(12, 19, 35, 0.9));
+  border-color: rgba(148, 163, 184, 0.15);
+  box-shadow: 0 18px 45px rgba(2, 6, 23, 0.28);
+}
+
+.stat-card {
+  min-height: 116px;
+  justify-content: space-between;
+  border-top: 1px solid rgba(165, 180, 252, 0.28);
+}
+
+.stat-title,
+.device-dashboard-heading p,
+.brand-sub-badge {
+  color: #aebbd0 !important;
+}
+
+.stat-value {
+  letter-spacing: -0.035em;
+  text-shadow: none;
+}
+
+.dashboard-brand-header {
+  padding: 0.75rem 0.25rem;
+}
+
+.brand-name-secondary {
+  background: linear-gradient(135deg, #c4b5fd 0%, #67e8f9 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+@media (min-width: 1101px) {
+  .dashboard-layout {
+    display: flex !important;
+  }
+
+  .sidebar {
+    display: flex !important;
+  }
+
+  .main-content {
+    padding: 2rem 0 !important;
+  }
+}
+
+@media (max-width: 1100px) {
+  .sidebar {
+    display: flex !important;
+  }
+
+  .main-content {
+    padding: 4.75rem 0 2rem !important;
+  }
+
+  .dashboard-brand-header {
+    margin-bottom: 1rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .app-container {
+    padding-inline: 0.85rem;
+  }
+
+  .stats-grid {
+    gap: 0.65rem;
+  }
+
+  .stat-card {
+    min-height: 98px;
+  }
+
+  .stat-title {
+    font-size: 0.72rem;
+    line-height: 1.4;
+  }
+
+  .stat-value {
+    font-size: clamp(1.55rem, 8vw, 2.1rem);
+  }
+}
+
+/* Sunset Orange must remain the final visual layer. */
+body {
+  background:
+    radial-gradient(circle at 7% 0%, rgba(249, 115, 22, 0.2), transparent 33rem),
+    radial-gradient(circle at 92% 9%, rgba(245, 158, 11, 0.13), transparent 30rem),
+    radial-gradient(circle at 58% 100%, rgba(190, 73, 32, 0.1), transparent 34rem),
+    linear-gradient(145deg, #120c0b 0%, #1b1210 48%, #241713 100%) !important;
+}
+
+.glass-card {
+  background: linear-gradient(145deg, rgba(54, 35, 28, 0.88), rgba(29, 19, 17, 0.9));
+  border-color: rgba(255, 207, 167, 0.14);
+  box-shadow: 0 18px 48px rgba(15, 7, 4, 0.34), inset 0 1px rgba(255, 232, 214, 0.035);
+}
+
+.stat-card {
+  border-top-color: rgba(251, 146, 60, 0.38);
+}
+
+.stat-title,
+.device-dashboard-heading p,
+.brand-sub-badge {
+  color: #cbb2a6 !important;
+}
+
+.brand-name-secondary {
+  background: linear-gradient(135deg, #fcd34d 0%, #fb923c 55%, #f87171 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
