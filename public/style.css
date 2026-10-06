@@ -2623,3 +2623,171 @@ body {
     padding: 1.25rem 0 2rem !important;
   }
 }
+
+/* ==========================================================================
+   Responsive Menu Enhancement for iPhone / iPad / Smartphones
+   ========================================================================== */
+
+.modules-panel-body {
+  padding: 0 1.25rem 1.25rem;
+}
+
+/* Base cc-modules-grid styling */
+.cc-modules-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 0.75rem !important;
+  width: 100%;
+}
+
+.cc-module-card {
+  min-height: 82px;
+  padding: 0.8rem 0.65rem !important;
+  border-radius: 14px !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  gap: 0.4rem !important;
+  transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease !important;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.cc-module-card:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(251, 146, 60, 0.4) !important;
+  transform: translateY(-2px);
+}
+
+.cc-module-card:active {
+  transform: scale(0.96) !important;
+}
+
+.cc-mod-icon {
+  font-size: 1.6rem !important;
+  line-height: 1 !important;
+}
+
+.cc-mod-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.cc-mod-info h5 {
+  font-size: 0.85rem !important;
+  font-weight: 600 !important;
+  color: #fff !important;
+  margin: 0 !important;
+  line-height: 1.3 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  width: 100% !important;
+}
+
+.cc-mod-info span {
+  font-size: 0.72rem !important;
+  color: var(--text-muted) !important;
+  margin-top: 2px !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  width: 100% !important;
+}
+
+/* iPad / Tablet (769px to 1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .cc-modules-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 0.85rem !important;
+  }
+  .cc-module-card {
+    min-height: 90px;
+    padding: 1rem 0.75rem !important;
+  }
+  .cc-mod-icon {
+    font-size: 1.8rem !important;
+  }
+  .cc-mod-info h5 {
+    font-size: 0.9rem !important;
+  }
+}
+
+/* Smartphone & iPhone (max-width: 768px) */
+@media (max-width: 768px) {
+  .modules-panel-body {
+    padding: 0 0.85rem 1rem !important;
+  }
+  .device-dashboard-heading[style*="padding"] {
+    padding: 1rem 0.85rem 0.65rem !important;
+  }
+  .cc-modules-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 0.65rem !important;
+  }
+  .cc-module-card {
+    min-height: 80px;
+    padding: 0.75rem 0.5rem !important;
+    border-radius: 13px !important;
+  }
+  .cc-mod-icon {
+    font-size: 1.45rem !important;
+  }
+  .cc-mod-info h5 {
+    font-size: 0.78rem !important;
+  }
+  .cc-mod-info span {
+    font-size: 0.68rem !important;
+  }
+}
+
+/* Small iPhone / SE & Compact Phones (max-width: 390px) */
+@media (max-width: 390px) {
+  .modules-panel-body {
+    padding: 0 0.65rem 0.85rem !important;
+  }
+  .cc-modules-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 0.5rem !important;
+  }
+  .cc-module-card {
+    min-height: 74px;
+    padding: 0.6rem 0.4rem !important;
+    border-radius: 11px !important;
+  }
+  .cc-mod-icon {
+    font-size: 1.3rem !important;
+  }
+  .cc-mod-info h5 {
+    font-size: 0.72rem !important;
+  }
+  .cc-mod-info span {
+    font-size: 0.62rem !important;
+  }
+}
+
+/* Global Back Button responsive polish */
+#gsap-back-btn {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 600px) {
+  #gsap-back-btn {
+    width: 100% !important;
+    justify-content: center !important;
+    padding: 9px 16px !important;
+    font-size: 0.88rem !important;
+    border-radius: 11px !important;
+  }
+}
