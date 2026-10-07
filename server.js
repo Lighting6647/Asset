@@ -19,7 +19,7 @@ function requireActionPassword(data, res) {
 }
 
 // Memory Cache to prevent API exhaustion and provide 0ms reads
-let dbInMemory = { devices: [], logs: [], assets: [], wifiNetworks: [] };
+let dbInMemory = { devices: [], logs: [], assets: [] };
 
 // JSONBin cloud storage config
 const JSONBIN_API_KEY = process.env.JSONBIN_API_KEY;
@@ -31,7 +31,6 @@ function readDb() {
   if (!dbInMemory.devices) dbInMemory.devices = [];
   if (!dbInMemory.logs) dbInMemory.logs = [];
   if (!dbInMemory.assets) dbInMemory.assets = [];
-  if (!dbInMemory.wifiNetworks) dbInMemory.wifiNetworks = [];
   return dbInMemory;
 }
 
@@ -127,9 +126,8 @@ function initDb(callback) {
     console.log('Detected JSONBin config. Fetching database from cloud...');
     fetchFromJsonBin()
       .then((data) => {
-        dbInMemory = data || { devices: [], logs: [], assets: [], wifiNetworks: [] };
+        dbInMemory = data || { devices: [], logs: [], assets: [] };
         if (!dbInMemory.assets) dbInMemory.assets = [];
-        if (!dbInMemory.wifiNetworks) dbInMemory.wifiNetworks = [];
         console.log('Database successfully loaded from JSONBin cloud!');
         callback();
       })
@@ -590,84 +588,6 @@ const server = http.createServer((req, res) => {
       } catch (err) {
         res.writeHead(400, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: 'Invalid payload: ' + err.message }));
-      }
-    });
-    return;
-  }
-
-  // --- Protected Wi-Fi Directory APIs ---
-
-  // GET /api/wifi-networks - Return safe metadata only (never passwords)
-  if (req.method === 'GET' && pathname === '/api/wifi-networks') {
-    const db = readDb();
-    const networks = (db.wifiNetworks || []).map(({ id, floor, area, ssid }) => ({
-      id, floor, area, ssid
-    }));
-    res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ networks }));
-    return;
-  }
-
-  // POST /api/wifi-password - Reveal one password after admin verification
-  if (req.method === 'POST' && pathname === '/api/wifi-password') {
-    const chunks = [];
-    req.on('data', chunk => chunks.push(chunk));
-    req.on('end', () => {
-      try {
-        const data = JSON.parse(chunks.join(''));
-        if (!requireActionPassword(data, res)) return;
-        const db = readDb();
-        const network = (db.wifiNetworks || []).find(item => item.id === data.wifiId);
-        if (!network) {
-          res.writeHead(404, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'Wi-Fi network not found.' }));
-          return;
-        }
-        res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' });
-        res.end(JSON.stringify({ password: network.password || '' }));
-      } catch (err) {
-        res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Invalid payload.' }));
-      }
-    });
-    return;
-  }
-
-  // POST /api/wifi-networks - Replace directory through an authenticated admin import
-  if (req.method === 'POST' && pathname === '/api/wifi-networks') {
-    const chunks = [];
-    req.on('data', chunk => chunks.push(chunk));
-    req.on('end', async () => {
-      try {
-        const data = JSON.parse(chunks.join(''));
-        if (!requireActionPassword(data, res)) return;
-        if (!Array.isArray(data.networks)) {
-          res.writeHead(400, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'Networks must be an array.' }));
-          return;
-        }
-        const db = readDb();
-        db.wifiNetworks = data.networks.map((item, index) => ({
-          id: String(item.id || `wifi-${index + 1}`),
-          floor: String(item.floor || '').trim(),
-          area: String(item.area || '').trim(),
-          ssid: String(item.ssid || '').trim(),
-          password: String(item.password || '')
-        })).filter(item => item.ssid);
-        dbInMemory = db;
-        if (JSONBIN_API_KEY && JSONBIN_BIN_ID) {
-          await saveToJsonBin(db);
-          console.log('Successfully synced Wi-Fi directory to JSONBin cloud!');
-        } else {
-          fs.mkdirSync(path.dirname(DB_FILE), { recursive: true });
-          fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2));
-        }
-        console.log(`Wi-Fi directory updated: ${db.wifiNetworks.length} networks`);
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ message: 'Wi-Fi directory updated.', count: db.wifiNetworks.length }));
-      } catch (err) {
-        res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Invalid payload.' }));
       }
     });
     return;
