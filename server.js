@@ -605,7 +605,20 @@ const server = http.createServer((req, res) => {
           deviceName: `${incomingDevices.length} registry rows`,
           action: `Asset Registry sync: ${updated} updated, ${added} added`
         });
-        if (db.logs.length > 100) db.logs = db.logs.slice(0, 100);
+        // Keep the cloud payload below JSONBin limits while retaining all fields shown in the UI.
+        db.devices = db.devices.map(device => ({
+          id: device.id,
+          name: device.name || device.userName || '',
+          userName: device.userName || device.name || '',
+          position: device.position || '',
+          deviceNumber: device.deviceNumber || '',
+          accessories: device.accessories || '',
+          isIOS: !!device.isIOS,
+          registeredAt: device.registeredAt || importedAt,
+          lastVerifiedAt: device.lastVerifiedAt || '',
+          ...(device.assignmentStatus ? { assignmentStatus: device.assignmentStatus } : {})
+        }));
+        if (db.logs.length > 20) db.logs = db.logs.slice(0, 20);
         dbInMemory = db;
         if (JSONBIN_API_KEY && JSONBIN_BIN_ID) {
           await saveToJsonBin(db);
