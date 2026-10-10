@@ -521,7 +521,7 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // POST /api/import-devices - Replace the device registry with a validated bulk import
+  // POST /api/import-devices - Update matching people and add missing registry rows
   if (req.method === 'POST' && pathname === '/api/import-devices') {
     const chunks = [];
     req.on('data', chunk => chunks.push(chunk));
@@ -536,7 +536,7 @@ const server = http.createServer((req, res) => {
         }
 
         const importedAt = new Date().toISOString();
-        const devices = data.devices.map((item, index) => {
+        const incomingDevices = data.devices.map((item, index) => {
           const userName = String(item.userName || item.name || '').trim();
           const deviceNumber = String(item.deviceNumber || '').trim();
           if (!userName) throw new Error(`Missing user name at row ${index + 1}`);
@@ -560,13 +560,52 @@ const server = http.createServer((req, res) => {
         });
 
         const db = readDb();
-        db.devices = devices;
-        db.logs = [{
+        const normalizeName = value => String(value || '')
+          .normalize('NFKC')
+          .toLowerCase()
+          .replace(/\s+/g, ' ')
+          .trim();
+        const availableByName = new Map();
+        db.devices.forEach(device => {
+          const key = normalizeName(device.userName || device.name);
+          if (!availableByName.has(key)) availableByName.set(key, []);
+          availableByName.get(key).push(device);
+        });
+
+        let updated = 0;
+        let added = 0;
+        incomingDevices.forEach((incoming, index) => {
+          const key = normalizeName(incoming.userName);
+          const candidates = availableByName.get(key) || [];
+          const existing = candidates.shift();
+          if (existing) {
+            Object.assign(existing, {
+              name: incoming.name,
+              userName: incoming.userName,
+              position: incoming.position,
+              deviceNumber: incoming.deviceNumber,
+              accessories: incoming.accessories,
+              isIOS: incoming.isIOS,
+              lastVerifiedAt: incoming.lastVerifiedAt,
+              sourceRecord: incoming.sourceRecord,
+              registrySyncedAt: importedAt
+            });
+            updated += 1;
+          } else {
+            incoming.id = `${incoming.id}-${Date.now().toString(36)}-${index + 1}`;
+            incoming.registrySyncedAt = importedAt;
+            db.devices.push(incoming);
+            added += 1;
+          }
+        });
+
+        db.logs.unshift({
           timestamp: importedAt,
           deviceId: 'bulk-import',
-          deviceName: `${devices.length} devices`,
-          action: 'Replaced device registry from IT Asset Registry'
-        }];
+          deviceName: `${incomingDevices.length} registry rows`,
+          action: `Asset Registry sync: ${updated} updated, ${added} added`
+        });
+        if (db.logs.length > 100) db.logs = db.logs.slice(0, 100);
         dbInMemory = db;
         if (JSONBIN_API_KEY && JSONBIN_BIN_ID) {
           await saveToJsonBin(db);
@@ -575,9 +614,15 @@ const server = http.createServer((req, res) => {
           fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2));
         }
 
-        console.log(`Device registry imported: ${devices.length} devices`);
+        console.log(`Device registry synced: ${updated} updated, ${added} added, ${db.devices.length} total`);
         res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ message: 'Device registry imported successfully.', count: devices.length }));
+        res.end(JSON.stringify({
+          message: 'Device registry synchronized successfully.',
+          sourceCount: incomingDevices.length,
+          updated,
+          added,
+          total: db.devices.length
+        }));
       } catch (err) {
         console.error('Device registry import failed:', err.message);
         res.writeHead(400, { 'Content-Type': 'application/json' });
