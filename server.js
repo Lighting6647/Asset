@@ -560,6 +560,8 @@ const server = http.createServer((req, res) => {
         });
 
         const db = readDb();
+        const replaceExisting = data.replace === true;
+        if (replaceExisting) db.devices = [];
         const normalizeName = value => String(value || '')
           .normalize('NFKC')
           .toLowerCase()
@@ -603,7 +605,9 @@ const server = http.createServer((req, res) => {
           timestamp: importedAt,
           deviceId: 'bulk-import',
           deviceName: `${incomingDevices.length} registry rows`,
-          action: `Asset Registry sync: ${updated} updated, ${added} added`
+          action: replaceExisting
+            ? `Asset Registry replaced with ${added} active devices`
+            : `Asset Registry sync: ${updated} updated, ${added} added`
         });
         // Keep the cloud payload below JSONBin limits while retaining all fields shown in the UI.
         db.devices = db.devices.map(device => ({
@@ -632,6 +636,7 @@ const server = http.createServer((req, res) => {
         res.end(JSON.stringify({
           message: 'Device registry synchronized successfully.',
           sourceCount: incomingDevices.length,
+          replaced: replaceExisting,
           updated,
           added,
           total: db.devices.length
