@@ -437,6 +437,72 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  // POST /api/import-devices - Replace the device registry with a validated bulk import
+  if (req.method === 'POST' && pathname === '/api/import-devices') {
+    const chunks = [];
+    req.on('data', chunk => chunks.push(chunk));
+    req.on('end', async () => {
+      try {
+        const data = JSON.parse(chunks.join(''));
+        if (!requireActionPassword(data, res)) return;
+        if (!Array.isArray(data.devices) || data.devices.length === 0) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Devices must be a non-empty array.' }));
+          return;
+        }
+
+        const importedAt = new Date().toISOString();
+        const devices = data.devices.map((item, index) => {
+          const userName = String(item.userName || item.name || '').trim();
+          const deviceNumber = String(item.deviceNumber || '').trim();
+          if (!userName) throw new Error(`Missing user name at row ${index + 1}`);
+          return {
+            id: `import-${index + 1}-${deviceNumber || 'device'}`
+              .toLowerCase()
+              .replace(/[^a-z0-9-]+/g, '-')
+              .replace(/-+/g, '-'),
+            name: userName,
+            userName,
+            position: String(item.position || '').trim(),
+            deviceNumber,
+            accessories: String(item.accessories || '').trim(),
+            userAgent: 'Imported from IT Asset Registry',
+            ip: 'Imported',
+            isIOS: !!item.isIOS,
+            registeredAt: String(item.registeredAt || importedAt),
+            lastVerifiedAt: String(item.lastVerifiedAt || importedAt),
+            sourceRecord: item.sourceRecord || null
+          };
+        });
+
+        const db = readDb();
+        db.devices = devices;
+        db.logs = [{
+          timestamp: importedAt,
+          deviceId: 'bulk-import',
+          deviceName: `${devices.length} devices`,
+          action: 'Replaced device registry from IT Asset Registry'
+        }];
+        dbInMemory = db;
+        if (JSONBIN_API_KEY && JSONBIN_BIN_ID) {
+          await saveToJsonBin(db);
+        } else {
+          fs.mkdirSync(path.dirname(DB_FILE), { recursive: true });
+          fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2));
+        }
+
+        console.log(`Device registry imported: ${devices.length} devices`);
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ message: 'Device registry imported successfully.', count: devices.length }));
+      } catch (err) {
+        console.error('Device registry import failed:', err.message);
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Invalid import payload: ' + err.message }));
+      }
+    });
+    return;
+  }
+
   // POST /api/verify - Verify device presence
   if (req.method === 'POST' && pathname === '/api/verify') {
     const chunks = [];
