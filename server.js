@@ -8,11 +8,26 @@ const PORT = Number(process.env.PORT) || 3000;
 const PUBLIC_DIR = path.join(__dirname, 'public');
 const DB_FILE = path.join(__dirname, 'data', 'db.json');
 const ACTION_PASSWORD = '664749';
+const DASHBOARD_SYNC_TOKEN = process.env.IOS_DASHBOARD_SYNC_TOKEN || '';
 
 function requireActionPassword(data, res) {
   if (!data || data.password !== ACTION_PASSWORD) {
     res.writeHead(401, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ error: 'รหัสผ่านไม่ถูกต้อง' }));
+    return false;
+  }
+  return true;
+}
+
+function normalizeDeviceNumber(value) {
+  return String(value || '').normalize('NFKC').toLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
+}
+
+function requireDashboardSyncToken(req, res) {
+  const suppliedToken = String(req.headers['x-integration-token'] || '');
+  if (!DASHBOARD_SYNC_TOKEN || suppliedToken !== DASHBOARD_SYNC_TOKEN) {
+    res.writeHead(401, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Integration token is invalid or not configured.' }));
     return false;
   }
   return true;
@@ -288,6 +303,75 @@ const server = http.createServer((req, res) => {
   }
 
   // --- API Routes ---
+
+  // POST /api/integration/device-assignment
+  // Server-to-server synchronization from IT Monthly Dashboard.
+  if (req.method === 'POST' && pathname === '/api/integration/device-assignment') {
+    if (!requireDashboardSyncToken(req, res)) return;
+    const chunks = [];
+    req.on('data', chunk => chunks.push(chunk));
+    req.on('end', () => {
+      try {
+        const data = JSON.parse(chunks.join(''));
+        const action = String(data.action || '');
+        const deviceNumber = String(data.deviceNumber || '').trim();
+        if (!['issue', 'return'].includes(action) || !deviceNumber) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'action and deviceNumber are required.' }));
+          return;
+        }
+
+        const db = readDb();
+        const normalizedNumber = normalizeDeviceNumber(deviceNumber);
+        const matchedDevices = db.devices.filter(device => normalizeDeviceNumber(device.deviceNumber) === normalizedNumber);
+        if (matchedDevices.length === 0) {
+          res.writeHead(404, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Device is not registered in iOS Device Monitor.', deviceNumber }));
+          return;
+        }
+
+        const userName = action === 'issue' ? String(data.userName || '').trim() : 'ส่วนกลาง';
+        const position = action === 'issue' ? String(data.position || '').trim() : 'คลัง IT';
+        if (action === 'issue' && !userName) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'userName is required when issuing a device.' }));
+          return;
+        }
+
+        const syncedAt = new Date().toISOString();
+        matchedDevices.forEach(device => {
+          device.name = userName;
+          device.userName = userName;
+          device.position = position;
+          device.assignmentStatus = action === 'issue' ? 'issued' : 'returned';
+          device.assignmentSyncedAt = syncedAt;
+          if (action === 'return') device.lastVerifiedAt = '';
+          addLog(
+            db,
+            device.id,
+            userName,
+            action === 'issue'
+              ? `Assigned from IT Dashboard (${device.deviceNumber})`
+              : `Returned from IT Dashboard (${device.deviceNumber})`
+          );
+        });
+        writeDb(db);
+
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+          success: true,
+          action,
+          deviceNumber,
+          matchedCount: matchedDevices.length,
+          syncedAt
+        }));
+      } catch (err) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Invalid payload: ' + err.message }));
+      }
+    });
+    return;
+  }
 
   // GET /api/devices - Get all devices and status
   if (req.method === 'GET' && pathname === '/api/devices') {
