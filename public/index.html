@@ -6,7 +6,7 @@
   <meta name="theme-color" media="(prefers-color-scheme: light)" content="#1e1b4b">
   <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#070913">
   <meta name="color-scheme" content="dark light">
-  <title>iAsset / AssetCloud - ระบบจัดการทรัพย์สินและอุปกรณ์</title>
+  <title>iAsset Store & Tools - ระบบจัดการสโตร์ คลังพัสดุ และเครื่องมือช่าง</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -22,8 +22,7 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="background-effects">
-    <div class="glow-orb orb-purple"></div>
+  <div class="background-effects"></div>
     <div class="glow-orb orb-indigo"></div>
   </div>
   <div class="dashboard-layout">
@@ -37,53 +36,53 @@
           <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
           <line x1="12" y1="18" x2="12.01" y2="18"></line>
         </svg>
-        <span>iAsset / AssetCloud</span>
+        <span>iAsset Store & Tools</span>
       </div>
       <nav class="sidebar-nav">
         <button id="sb-dashboard" class="sidebar-menu-item active">
-          <span class="sb-icon">💻</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sb-icon"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg>
           <span class="sb-text">แดชบอร์ดอุปกรณ์ (Devices)</span>
         </button>
         <div id="sb-devices-submenu" class="sidebar-submenu">
           <button id="sb-devices-registered" class="sidebar-submenu-item">
-            <span class="sb-submenu-icon">📱</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sb-submenu-icon"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg>
             <span>ข้อมูลอุปกรณ์ที่ลงทะเบียน</span>
           </button>
           <button id="sb-activity-log" class="sidebar-submenu-item">
-            <span class="sb-submenu-icon">🕘</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sb-submenu-icon"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
             <span>ประวัติการทำรายการ (Audit Log)</span>
           </button>
           
         </div>
         <button id="sb-assets" class="sidebar-menu-item">
-          <span class="sb-icon">🏢</span>
-          <span class="sb-text">ระบบนับทรัพย์สิน (Assets)</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sb-icon"><rect width="16" height="20" x="4" y="2" rx="2" ry="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M8 10h.01"/><path d="M16 10h.01"/><path d="M8 14h.01"/><path d="M16 14h.01"/></svg>
+          <span class="sb-text">คลังพัสดุและเครื่องมือ (Store Inventory)</span>
         </button>
         <div id="sb-assets-submenu" class="sidebar-submenu">
           <button id="sb-assets-registered" class="sidebar-submenu-item">
-            <span class="sb-submenu-icon">📋</span>
-            <span>ข้อมูลทรัพย์สินที่ลงทะเบียน</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sb-submenu-icon"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/></svg>
+            <span>ทะเบียนพัสดุและเครื่องมือช่าง</span>
           </button>
           <button id="sb-scan-qr" class="sidebar-submenu-item">
-            <span class="sb-submenu-icon">📷</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sb-submenu-icon"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
             <span>สแกน QR (Scan QR)</span>
           </button>
           
         </div>
         <button id="sb-export-devices-pdf" class="sidebar-menu-item">
-          <span class="sb-icon">📄</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sb-icon"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
           <span class="sb-text">รายงานอุปกรณ์ (Devices)</span>
         </button>
         <button id="sb-export-assets-pdf" class="sidebar-menu-item">
-          <span class="sb-icon">📑</span>
-          <span class="sb-text">รายงานทรัพย์สิน (Assets)</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sb-icon"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M8 18v-2"/><path d="M12 18v-4"/><path d="M16 18v-6"/></svg>
+          <span class="sb-text">รายงานสโตร์และพัสดุ (Store Report)</span>
         </button>
         <button id="sb-settings" class="sidebar-menu-item">
-          <span class="sb-icon">⚙️</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sb-icon"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
           <span class="sb-text">ตั้งค่าระบบ (Settings)</span>
         </button>
         <button id="sb-logout" class="sidebar-menu-item">
-          <span class="sb-icon">🚪</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sb-icon"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
           <span class="sb-text">ออกจากระบบ (Logout)</span>
         </button>
       </nav>
@@ -118,9 +117,9 @@
 
       <!-- MAIN NAVIGATION TABS (Moved to Sidebar) -->
       <div class="nav-tabs" style="display: none !important; gap: 1rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; flex-wrap: wrap;">
-        <button id="nav-devices-btn" class="btn btn-primary" style="flex: 1; min-width: 200px; padding: 0.75rem; font-size: 1rem;">🗺️ แดชบอร์ดอุปกรณ์ (Devices)</button>
-        <button id="nav-assets-btn" class="btn btn-secondary" style="flex: 1; min-width: 200px; padding: 0.75rem; font-size: 1rem;">🖨️ ระบบนับทรัพย์สิน (Assets)</button>
-        <button id="btn-show-scan-asset" class="btn hidden" style="flex: 1; min-width: 200px; padding: 0.75rem; font-size: 1rem; background: var(--accent-indigo); color: white; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);">📷 สแกน QR (Scan Asset)</button>
+        <button id="nav-devices-btn" class="btn btn-primary" style="flex: 1; min-width: 200px; padding: 0.75rem; font-size: 1rem;">แดชบอร์ดอุปกรณ์ (Devices)</button>
+        <button id="nav-assets-btn" class="btn btn-secondary" style="flex: 1; min-width: 200px; padding: 0.75rem; font-size: 1rem;">ระบบนับทรัพย์สิน (Assets)</button>
+        <button id="btn-show-scan-asset" class="btn hidden" style="flex: 1; min-width: 200px; padding: 0.75rem; font-size: 1rem; background: var(--accent-indigo); color: white; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);">สแกน QR (Scan Asset)</button>
       </div>
 
       <!-- ICLOUD TOPBAR -->
@@ -214,7 +213,7 @@
           <div id="device-status-bars" class="device-status-bars"></div>
           <div style="margin-top: 1rem; flex: 1; display: flex; flex-direction: column;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-              <span style="font-size: 0.85rem; color: var(--text-muted);">📍 พิกัดอุปกรณ์ล่าสุด</span>
+              <span style="font-size: 0.85rem; color: var(--text-muted);">พิกัดอุปกรณ์ล่าสุด</span>
               <button id="btn-expand-map" class="btn btn-secondary" style="padding: 0.2rem 0.5rem; font-size: 0.7rem;">ดูแผนที่ใหญ่</button>
             </div>
             <div id="mini-map-container" style="flex: 1; min-height: 160px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); overflow: hidden; background: rgba(0,0,0,0.2); z-index: 10;"></div>
@@ -225,34 +224,41 @@
         
         <!-- COMMAND CENTER MODULES -->
       <article class="glass-card device-dashboard-panel" id="modules-panel" style="display: flex; flex-direction: column;">
-        <div class="device-dashboard-heading" style="padding: 1.25rem 1.25rem 0;"><div><h2 style="font-size: 1.15rem; margin-bottom: 0.25rem; color: #fff;">⚡ โมดูลระบบ (Modules)</h2><p style="font-size: 0.78rem; color: var(--text-muted); margin: 0;">เมนูลัด (Quick Control)</p></div></div>
+        <div class="device-dashboard-heading" style="padding: 1.25rem 1.25rem 0;"><div><h2 style="font-size: 1.15rem; margin-bottom: 0.25rem; color: #fff;">โมดูลระบบ (Modules)</h2><p style="font-size: 0.78rem; color: var(--text-muted); margin: 0;">เมนูลัด (Quick Control)</p></div></div>
 <div class="modules-panel-body" style="flex: 1;">
         <div class="cc-modules-grid">
             
             <div class="cc-module-card" id="cc-btn-devices-reg">
-              <div class="cc-mod-icon">📱</div>
+              <div class="cc-mod-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="20" x="5" y="2" rx="2"/><path d="M12 18h.01"/></svg></div>
               <div class="cc-mod-info">
                 <h5>ข้อมูลอุปกรณ์ (Devices)</h5>
                 <span id="cc-data-devices" style="color: #6366f1; font-weight: bold;">Loading...</span>
               </div>
             </div>
             <div class="cc-module-card" id="cc-btn-assets-reg">
-              <div class="cc-mod-icon">📋</div>
+              <div class="cc-mod-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect width="8" height="4" x="8" y="2" rx="1"/></svg></div>
               <div class="cc-mod-info">
-                <h5>ข้อมูลทรัพย์สิน (Assets)</h5>
+                <h5>คลังพัสดุและเครื่องมือ (Store)</h5>
                 <span id="cc-data-assets" style="color: #6366f1; font-weight: bold;">Loading...</span>
               </div>
             </div>
             
+            <a class="cc-module-card" id="cc-btn-lark-reminders" href="/lark-reminders.html" style="text-decoration: none; color: inherit;">
+              <div class="cc-mod-icon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></svg></div>
+              <div class="cc-mod-info">
+                <h5>แจ้งเตือนผ่าน Lark</h5>
+                <span style="color: var(--text-muted);">ตั้งค่าผู้รับและส่งลิงก์ยืนยัน</span>
+              </div>
+            </a>
             <div class="cc-module-card" id="cc-btn-fast-audit">
-              <div class="cc-mod-icon" style="color: #f59e0b;">⚡</div>
+              <div class="cc-mod-icon" style="color: #f59e0b;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
               <div class="cc-mod-info">
                 <h5 style="color: #f59e0b;">โหมดตรวจนับด่วน</h5>
                 <span style="color: var(--text-muted);">Fast Audit Mode</span>
               </div>
             </div>
             <div class="cc-module-card" id="cc-btn-scan">
-              <div class="cc-mod-icon" style="color: #00ff66;">📷</div>
+              <div class="cc-mod-icon" style="color: #10b981;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg></div>
               <div class="cc-mod-info">
                 <h5 style="color: #00ff66;">สแกน QR / Barcode</h5>
                 <span style="color: var(--text-muted);">Quick Scan Tool</span>
@@ -260,7 +266,7 @@
             </div>
             
             <div class="cc-module-card" id="cc-btn-logs">
-              <div class="cc-mod-icon">🕘</div>
+              <div class="cc-mod-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
               <div class="cc-mod-info">
                 <h5>ประวัติการทำงาน</h5>
                 <span id="cc-data-logs" style="color: #6366f1; font-weight: bold;">Loading...</span>
@@ -268,14 +274,14 @@
             </div>
             
             <div class="cc-module-card" id="cc-btn-reports-dev">
-              <div class="cc-mod-icon">📄</div>
+              <div class="cc-mod-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg></div>
               <div class="cc-mod-info">
                 <h5>รายงานอุปกรณ์</h5>
                 <span style="color: var(--text-muted);">Device Reports</span>
               </div>
             </div>
             <div class="cc-module-card" id="cc-btn-reports-ass">
-              <div class="cc-mod-icon">📑</div>
+              <div class="cc-mod-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M8 18v-2"/><path d="M12 18v-4"/><path d="M16 18v-6"/></svg></div>
               <div class="cc-mod-info">
                 <h5>รายงานทรัพย์สิน</h5>
                 <span style="color: var(--text-muted);">Asset Reports</span>
@@ -283,14 +289,14 @@
             </div>
 
             <div class="cc-module-card" id="cc-btn-export-excel">
-              <div class="cc-mod-icon" style="color: #10b981;">📊</div>
+              <div class="cc-mod-icon" style="color: #10b981;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" x2="18" y1="20" y2="10"/><line x1="12" x2="12" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="14"/></svg></div>
               <div class="cc-mod-info">
                 <h5 style="color: #10b981;">นำออก Excel</h5>
                 <span style="color: var(--text-muted);">Export All Data</span>
               </div>
             </div>
             <div class="cc-module-card" id="cc-btn-settings">
-              <div class="cc-mod-icon" style="color: #ffcc00;">⚙️</div>
+              <div class="cc-mod-icon" style="color: #ffcc00;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div>
               <div class="cc-mod-info">
                 <h5 style="color: #ffcc00;">ตั้งค่าระบบ</h5>
                 <span style="color: var(--text-muted);">System Settings</span>
@@ -360,7 +366,7 @@
         <!-- SEARCH & FILTER BAR -->
         <div class="search-filter-bar" style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; align-items: center;">
           <div style="flex: 3; min-width: 250px; position: relative;">
-            <input type="text" id="search-input" placeholder="🔍 ค้นหาตามชื่อผู้ใช้, ตำแหน่ง, S/N, อุปกรณ์เสริม หรือที่อยู่..." style="width: 100%; padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.25); color: #fff; outline: none; font-family: 'Plus Jakarta Sans', sans-serif;">
+            <input type="text" id="search-input" placeholder="ค้นหาตามชื่อผู้ใช้, ตำแหน่ง, S/N, อุปกรณ์เสริม หรือที่อยู่..." style="width: 100%; padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.25); color: #fff; outline: none; font-family: 'Plus Jakarta Sans', sans-serif;">
           </div>
           <div style="flex: 1.5; min-width: 150px;">
             <select id="status-filter" style="width: 100%; padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: rgba(18, 18, 29, 0.95); color: #fff; outline: none; font-family: 'Plus Jakarta Sans', sans-serif; cursor: pointer;">
@@ -373,7 +379,7 @@
           </div>
           <div style="flex: 0.8; min-width: 130px; display: none;">
             <button id="btn-export-pdf" class="btn btn-secondary" style="width: 100%; height: 42px; display: flex; align-items: center; justify-content: center; gap: 0.5rem; background: var(--accent-purple); color: #fff; border-color: var(--accent-purple); font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 500;">
-              📊 Export PDF
+              Export PDF
             </button>
           </div>
         </div>
@@ -448,7 +454,7 @@
         <div class="glass-card" style="margin-bottom: 1.5rem; padding: 1.5rem;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
             <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.25rem; font-weight: 600; color: #fff; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
-              <span>📍</span> แผนที่ติดตามอุปกรณ์ (Device Location Map)
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 6px;"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg> แผนที่ติดตามอุปกรณ์ (Device Location Map)
             </h3>
             <span style="font-size: 0.8rem; color: var(--text-muted);">
               พิกัดอ้างอิงจากการระบุตำแหน่งขณะกดยืนยันตัวตน
@@ -541,8 +547,8 @@
         <section id="registered-assets-page" class="glass-card main-card hidden">
           <div class="card-header">
             <div>
-              <h2>ข้อมูลทรัพย์สินที่ลงทะเบียน</h2>
-              <p class="subtitle" style="margin-top: 0.25rem;">รายการทรัพย์สินทั้งหมดที่บันทึกไว้ในระบบ</p>
+              <h2>ทะเบียนพัสดุ เครื่องมือ และอุปกรณ์สโตร์</h2>
+              <p class="subtitle" style="margin-top: 0.25rem;">จัดการสต็อก สถานะเบิกยืม-รับคืน และพิกัดชั้นวาง (Rack / Shelf)</p>
             </div>
             <div>
               <button id="btn-show-add-asset" class="btn btn-secondary">
@@ -558,7 +564,7 @@
           <!-- SCAN ASSET DRAWER -->
           <div id="scan-asset-drawer" class="drawer hidden" style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; margin-bottom: 1.5rem;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-              <h3 style="margin: 0; font-size: 1.1rem;">📷 สแกน QR Code ทรัพย์สิน</h3>
+              <h3 style="margin: 0; font-size: 1.1rem;">สแกน QR Code ทรัพย์สิน</h3>
               <button id="btn-close-scan-asset" class="btn-text" style="color: #fca5a5;">ปิดกล้อง (Close)</button>
             </div>
             <div id="admin-qr-reader" style="width: 100%; border-radius: 8px; overflow: hidden; background: #000;"></div>
@@ -580,12 +586,24 @@
                 <label for="new-asset-sn">หมายเลขซีเรียล (S/N)</label>
                 <input type="text" id="new-asset-sn" placeholder="Serial Number / รหัสครุภัณฑ์">
               </div>
+              <div class="input-field">
+                <label for="new-asset-shelf">พิกัดชั้นวางในสโตร์ (Rack / Bin / Shelf)</label>
+                <input type="text" id="new-asset-shelf" placeholder="เช่น ชั้น A-02, ล็อก B1, ตู้ 3" style="background: rgba(37, 99, 235, 0.1); border-color: rgba(59, 130, 246, 0.4);">
+              </div>
+              <div class="input-field">
+                <label for="new-asset-status">สถานะเริ่มต้น (Initial Status)</label>
+                <select id="new-asset-status" style="width: 100%; padding: 0.65rem 0.75rem; background: var(--bg-card); color: #fff; border: 1px solid var(--border-color); border-radius: 8px;">
+                  <option value="available" selected>🟢 พร้อมใช้งานในสโตร์ (Available)</option>
+                  <option value="borrowed">🟡 ถูกเบิกยืมใช้งาน (Borrowed)</option>
+                  <option value="maintenance">🔴 ส่งซ่อม / ตรวจสภาพ (Maintenance)</option>
+                </select>
+              </div>
               <div class="input-field" style="grid-column: span 2;">
-                <label for="new-asset-location">สถานที่ตั้ง (Location)</label>
+                <label for="new-asset-location">สถานที่จัดเก็บหลัก / โกดัง (Warehouse Location)</label>
                 <div style="display: flex; gap: 0.5rem;">
-                  <input type="text" id="new-asset-location" placeholder="เช่น ห้องประชุม 1, ชั้น 2" style="flex: 1;">
+                  <input type="text" id="new-asset-location" placeholder="เช่น สโตร์กลาง, คลังพัสดุช่าง 1" style="flex: 1;">
                   <button type="button" id="btn-pick-location-new" class="btn btn-secondary" style="white-space: nowrap; padding: 0 1rem; display: flex; align-items: center; gap: 0.5rem;">
-                    📍 แผนที่
+                    แผนที่
                   </button>
                 </div>
               </div>
@@ -598,8 +616,8 @@
                       เพิ่มรูปภาพ
                     </summary>
                     <div class="image-source-menu">
-                      <button type="button" id="btn-open-new-camera" class="image-source-option">📷 ถ่ายรูป</button>
-                      <label for="new-asset-image" class="image-source-option">🖼️ เลือกภาพ</label>
+                      <button type="button" id="btn-open-new-camera" class="image-source-option">ถ่ายรูป</button>
+                      <label for="new-asset-image" class="image-source-option">เลือกภาพ</label>
                     </div>
                   </details>
                   <span id="new-asset-image-filename" style="color: var(--text-muted); font-size: 0.85rem;">ยังไม่ได้เลือกรูปภาพ</span>
@@ -633,12 +651,22 @@
                 <input type="text" id="edit-asset-sn">
               </div>
               <div class="input-field">
-                <label for="edit-asset-location">สถานที่ตั้ง (Location)</label>
+                <label for="edit-asset-shelf">พิกัดชั้นวาง (Rack / Shelf)</label>
+                <input type="text" id="edit-asset-shelf" placeholder="เช่น ชั้น A-02">
+              </div>
+              <div class="input-field">
+                <label for="edit-asset-status">สถานะพัสดุ</label>
+                <select id="edit-asset-status" style="width: 100%; padding: 0.65rem 0.75rem; background: var(--bg-card); color: #fff; border: 1px solid var(--border-color); border-radius: 8px;">
+                  <option value="available">🟢 พร้อมใช้งานในสโตร์ (Available)</option>
+                  <option value="borrowed">🟡 ถูกเบิกยืมใช้งาน (Borrowed)</option>
+                  <option value="maintenance">🔴 ส่งซ่อม / ชำรุด (Maintenance)</option>
+                </select>
+              </div>
+              <div class="input-field" style="grid-column: span 2;">
+                <label for="edit-asset-location">สถานที่จัดเก็บหลัก (Warehouse)</label>
                 <div style="display: flex; gap: 0.5rem;">
                   <input type="text" id="edit-asset-location">
-                  <button type="button" id="btn-pick-location-edit" class="btn btn-secondary" style="white-space: nowrap; padding: 0 0.5rem;" title="เลือกจากแผนที่">
-                    📍
-                  </button>
+                  <button type="button" id="btn-pick-location-edit" class="btn btn-secondary" style="white-space: nowrap; padding: 0 0.5rem;" title="เลือกจากแผนที่"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg></button>
                 </div>
               </div>
               <div class="input-field" style="grid-column: span 2;">
@@ -650,8 +678,8 @@
                       เพิ่มรูปภาพ
                     </summary>
                     <div class="image-source-menu">
-                      <button type="button" id="btn-open-edit-camera" class="image-source-option">📷 ถ่ายรูป</button>
-                      <label for="edit-asset-image" class="image-source-option">🖼️ เลือกภาพ</label>
+                      <button type="button" id="btn-open-edit-camera" class="image-source-option">ถ่ายรูป</button>
+                      <label for="edit-asset-image" class="image-source-option">เลือกภาพ</label>
                     </div>
                   </details>
                   <span id="edit-asset-image-filename" style="color: var(--text-muted); font-size: 0.85rem;">ยังไม่ได้เลือกรูปภาพ</span>
@@ -710,7 +738,7 @@
             <p>ปรับเฉพาะประสบการณ์ใช้งานบนเบราว์เซอร์นี้ โดยไม่แก้ไขข้อมูลอุปกรณ์หรือทรัพย์สิน</p>
           </div>
           <div class="settings-heading-actions">
-            <span class="settings-readonly-badge">🔒 Database Safe</span>
+            <span class="settings-readonly-badge">Database Safe</span>
             <button id="btn-back-from-settings" class="btn btn-secondary" type="button">← กลับแดชบอร์ด</button>
           </div>
         </div>
@@ -724,7 +752,7 @@
 
         <div class="settings-grid">
           <section class="settings-panel">
-            <div class="settings-panel-title"><span>✨</span><div><h3>หน้าจอและการเคลื่อนไหว</h3><p>บันทึกเฉพาะในเบราว์เซอร์เครื่องนี้</p></div></div>
+            <div class="settings-panel-title"><span class="settings-panel-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span><div><h3>หน้าจอและการเคลื่อนไหว</h3><p>บันทึกเฉพาะในเบราว์เซอร์เครื่องนี้</p></div></div>
             <label class="settings-toggle-row">
               <span><strong>GSAP Animation</strong><small>เปิดการเคลื่อนไหวของเมนู Liquid Glass</small></span>
               <input id="setting-motion" type="checkbox" checked><i></i>
@@ -740,14 +768,14 @@
           </section>
 
           <section class="settings-panel">
-            <div class="settings-panel-title"><span>🔔</span><div><h3>การแจ้งเตือนบนหน้าจอ</h3><p>ตั้งค่าการแสดงผล ไม่แก้สถานะรายการ</p></div></div>
+            <div class="settings-panel-title"><span class="settings-panel-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></span><div><h3>การแจ้งเตือนบนหน้าจอ</h3><p>ตั้งค่าการแสดงผล ไม่แก้สถานะรายการ</p></div></div>
             <label class="settings-toggle-row"><span><strong>Pending / Unverified</strong><small>แสดงงานที่รอตรวจสอบในศูนย์แจ้งเตือน</small></span><input id="setting-alert-pending" type="checkbox" checked><i></i></label>
             <label class="settings-toggle-row"><span><strong>Overdue</strong><small>แสดงรายการที่เกินกำหนด</small></span><input id="setting-alert-overdue" type="checkbox" checked><i></i></label>
             <label class="settings-toggle-row"><span><strong>ทรัพย์สินยังไม่สแกน</strong><small>แสดงรายการที่ยังไม่มี Last Scanned</small></span><input id="setting-alert-assets" type="checkbox" checked><i></i></label>
           </section>
 
           <section class="settings-panel">
-            <div class="settings-panel-title"><span>🛡️</span><div><h3>ความปลอดภัย</h3><p>ข้อมูลสำคัญแสดงแบบอ่านอย่างเดียว</p></div></div>
+            <div class="settings-panel-title"><span class="settings-panel-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg></span><div><h3>ความปลอดภัย</h3><p>ข้อมูลสำคัญแสดงแบบอ่านอย่างเดียว</p></div></div>
             <div class="settings-info-row"><span>การยืนยันคำสั่ง</span><strong>เปิดใช้งาน</strong></div>
             <div class="settings-info-row"><span>Add / Verify / Edit / Delete</span><strong>ต้องใช้รหัสผ่าน</strong></div>
             <div class="settings-info-row"><span>ข้อมูลรหัสผ่าน</span><strong>ถูกซ่อน</strong></div>
@@ -755,7 +783,7 @@
           </section>
 
           <section class="settings-panel">
-            <div class="settings-panel-title"><span>☁️</span><div><h3>ฐานข้อมูล Lark</h3><p>ตรวจสอบการเชื่อมต่อแบบอ่านอย่างเดียว</p></div></div>
+            <div class="settings-panel-title"><span class="settings-panel-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.5 19C19.9853 19 22 16.9853 22 14.5C22 12.1332 20.1764 10.1983 17.8687 10.0166C17.3773 6.62149 14.4532 4 11 4C7.13401 4 4 7.13401 4 11C4 11.2384 4.01192 11.4741 4.03503 11.7066C2.28588 12.3929 1 14.0487 1 16C1 18.2091 2.79086 20 5 20H17.5V19Z"/></svg></span><div><h3>ฐานข้อมูล Lark</h3><p>ตรวจสอบการเชื่อมต่อแบบอ่านอย่างเดียว</p></div></div>
             <div class="settings-info-row"><span>Table ID</span><strong>tbl4aur2pyRyYgXM</strong></div>
             <div class="settings-info-row"><span>View ID</span><strong>vew9gGopfl</strong></div>
             <div class="settings-connection-row"><span id="settings-lark-status" class="settings-connection-badge">ยังไม่ได้ทดสอบ</span></div>
@@ -766,7 +794,7 @@
           </section>
 
           <section class="settings-panel settings-panel-wide">
-            <div class="settings-panel-title"><span>📄</span><div><h3>รายงาน PDF</h3><p>กำหนดรูปแบบไฟล์ส่งออกเท่านั้น</p></div></div>
+            <div class="settings-panel-title"><span class="settings-panel-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg></span><div><h3>รายงาน PDF</h3><p>กำหนดรูปแบบไฟล์ส่งออกเท่านั้น</p></div></div>
             <div class="settings-report-grid">
               <label class="settings-field-row"><span><strong>แนวกระดาษ</strong></span><select id="setting-report-orientation"><option value="landscape">แนวนอน</option><option value="portrait">แนวตั้ง</option></select></label>
               <label class="settings-field-row"><span><strong>คุณภาพไฟล์</strong></span><select id="setting-report-quality"><option value="high">สูง</option><option value="standard">มาตรฐาน</option></select></label>
@@ -789,7 +817,7 @@
           <div id="qrcode-container" class="qr-preview-code"></div>
           <p class="qr-preview-help">สแกน QR นี้ด้วยโทรศัพท์เพื่อเปิดข้อมูลทรัพย์สิน</p>
           <div class="qr-preview-actions">
-            <button id="btn-save-qr" class="btn btn-primary" type="button">💾 บันทึกรูป QR</button>
+            <button id="btn-save-qr" class="btn btn-primary" type="button">บันทึกรูป QR</button>
             <button id="btn-close-qr-modal" class="btn btn-secondary" type="button">ปิด</button>
           </div>
         </div>
@@ -815,7 +843,7 @@
         <section id="client-registration-section" class="client-sub-panel hidden">
           <!-- QR Scanner / Default State -->
           <div style="background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 1rem; margin-bottom: 1rem; text-align: center;">
-            <p style="color: #fff; font-size: 0.95rem; margin-bottom: 1rem;"><strong>📷 ระบบสแกน QR ทรัพย์สิน</strong><br>แสกนคิวอาร์โค้ดของทรัพย์สินเพื่อทำการ Check-in</p>
+            <p style="color: #fff; font-size: 0.95rem; margin-bottom: 1rem;"><strong>ระบบสแกน QR ทรัพย์สิน</strong><br>แสกนคิวอาร์โค้ดของทรัพย์สินเพื่อทำการ Check-in</p>
             <div id="qr-reader" style="width: 100%; border-radius: 8px; overflow: hidden;"></div>
             <div id="qr-reader-results" style="margin-top: 1rem; font-weight: bold; color: var(--accent-purple);"></div>
           </div>
@@ -887,7 +915,7 @@
   <!-- Location Picker Modal -->
   <div id="location-picker-modal" class="modal-overlay hidden">
     <div class="modal-content" style="max-width: 600px; width: 95%;">
-      <h2>📍 เลือกสถานที่ตั้งบนแผนที่</h2>
+      <h2>เลือกสถานที่ตั้งบนแผนที่</h2>
       <p style="color: var(--text-muted); margin-bottom: 1rem; font-size: 0.9rem;">คลิกบนแผนที่เพื่อปักหมุดตำแหน่ง แล้วกด "ยืนยันตำแหน่ง"</p>
       <div id="picker-map-container" style="width: 100%; height: 350px; border-radius: 8px; margin-bottom: 1rem; background: #222;"></div>
       <div id="picker-address-preview" style="background: rgba(255,255,255,0.05); padding: 0.75rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.9rem; min-height: 40px; color: #fff;">
@@ -903,7 +931,7 @@
   <!-- Camera Capture Modal -->
   <div id="camera-capture-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="camera-capture-title">
     <div class="modal-content camera-capture-dialog">
-      <h2 id="camera-capture-title">📷 ถ่ายรูปทรัพย์สิน</h2>
+      <h2 id="camera-capture-title">ถ่ายรูปทรัพย์สิน</h2>
       <p id="camera-capture-status" class="camera-capture-status">กำลังเปิดกล้อง...</p>
       <div class="camera-capture-stage">
         <video id="camera-capture-video" autoplay playsinline muted></video>
@@ -911,7 +939,7 @@
       </div>
       <div class="camera-capture-actions">
         <button id="btn-close-camera" class="btn btn-secondary" type="button">ยกเลิก</button>
-        <button id="btn-capture-photo" class="btn btn-primary" type="button">📸 ถ่ายภาพ</button>
+        <button id="btn-capture-photo" class="btn btn-primary" type="button">ถ่ายภาพ</button>
         <button id="btn-retake-photo" class="btn btn-secondary hidden" type="button">ถ่ายใหม่</button>
         <button id="btn-use-photo" class="btn btn-primary hidden" type="button">ใช้ภาพนี้</button>
       </div>
@@ -922,6 +950,57 @@
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
   <script src="app.js"></script>
+
+
+  <!-- STORE BORROW & RETURN MODAL -->
+  <div id="store-action-modal" class="hidden" style="position: fixed; inset: 0; z-index: 9999; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.75); backdrop-filter: blur(8px); padding: 1rem;">
+    <div class="glass-card" style="max-width: 440px; width: 100%; background: #0f172a; border: 1px solid rgba(255,255,255,0.15); border-radius: 16px; padding: 1.5rem; box-shadow: 0 20px 50px rgba(0,0,0,0.6);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+        <h3 id="store-modal-title" style="margin: 0; font-size: 1.2rem; color: #fff;">📦 เบิกยืมอุปกรณ์สโตร์</h3>
+        <button id="btn-close-store-modal" type="button" style="background: none; border: none; color: #94a3b8; font-size: 1.25rem; cursor: pointer;">✕</button>
+      </div>
+
+      <div style="padding: 0.75rem 1rem; background: rgba(255,255,255,0.05); border-radius: 10px; margin-bottom: 1.25rem;">
+        <div style="font-size: 0.8rem; color: #94a3b8;">อุปกรณ์ / พัสดุ:</div>
+        <div id="store-modal-asset-name" style="font-weight: 600; color: #60a5fa; font-size: 1.05rem;">-</div>
+        <div id="store-modal-asset-shelf" style="font-size: 0.8rem; color: #cbd5e1; margin-top: 0.25rem;">พิกัดชั้น: -</div>
+      </div>
+
+      <!-- BORROW FORM -->
+      <div id="store-borrow-section">
+        <div class="input-field" style="margin-bottom: 1rem;">
+          <label for="borrow-person-name" style="color: #cbd5e1; font-size: 0.85rem; display: block; margin-bottom: 0.4rem;">ชื่อผู้เบิก / ช่างผู้ใช้งาน *</label>
+          <input type="text" id="borrow-person-name" placeholder="เช่น นายสมชาย (ช่างไฟ), กิตติศักดิ์" style="width: 100%; padding: 0.65rem 0.75rem; border-radius: 8px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); color: #fff;">
+        </div>
+        <div class="input-field" style="margin-bottom: 1rem;">
+          <label for="borrow-due-date" style="color: #cbd5e1; font-size: 0.85rem; display: block; margin-bottom: 0.4rem;">กำหนดส่งคืน (Due Date)</label>
+          <input type="date" id="borrow-due-date" style="width: 100%; padding: 0.65rem 0.75rem; border-radius: 8px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); color: #fff;">
+        </div>
+        <div class="input-field" style="margin-bottom: 1.25rem;">
+          <label for="borrow-note" style="color: #cbd5e1; font-size: 0.85rem; display: block; margin-bottom: 0.4rem;">หมายเหตุงาน / สถานที่นำไปใช้</label>
+          <input type="text" id="borrow-note" placeholder="เช่น นำไปซ่อมตู้ MDB ชั้น 3" style="width: 100%; padding: 0.65rem 0.75rem; border-radius: 8px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); color: #fff;">
+        </div>
+        <button id="btn-submit-borrow" class="btn btn-primary" style="width: 100%; padding: 0.75rem; font-weight: 600; background: #2563eb;">ยืนยันจ่ายของออก (Check Out)</button>
+      </div>
+
+      <!-- RETURN FORM -->
+      <div id="store-return-section" class="hidden">
+        <div style="margin-bottom: 1rem; color: #cbd5e1; font-size: 0.9rem;">
+          ผู้ยืมปัจจุบัน: <strong id="return-borrower-name" style="color: #fbbf24;">-</strong>
+        </div>
+        <div class="input-field" style="margin-bottom: 1.25rem;">
+          <label for="return-condition" style="color: #cbd5e1; font-size: 0.85rem; display: block; margin-bottom: 0.4rem;">ตรวจสภาพหลังคืน (Condition Check)</label>
+          <select id="return-condition" style="width: 100%; padding: 0.65rem 0.75rem; border-radius: 8px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); color: #fff;">
+            <option value="สภาพสมบูรณ์ พร้อมจัดเก็บเข้าชั้น">✅ สภาพสมบูรณ์ พร้อมจัดเก็บเข้าชั้นเดิม</option>
+            <option value="ชำรุดเล็กน้อย ต้องทำความสะอาด/บำรุงรักษา">⚠️ ต้องทำความสะอาด / บำรุงรักษา</option>
+            <option value="ชำรุดเสียหาย ต้องส่งซ่อม">❌ ชำรุดเสียหาย ต้องส่งซ่อม</option>
+          </select>
+        </div>
+        <button id="btn-submit-return" class="btn btn-primary" style="width: 100%; padding: 0.75rem; font-weight: 600; background: #10b981;">รับคืนเข้าสโตร์ (Check In to Rack)</button>
+      </div>
+
+    </div>
+  </div>
 
 </body>
 </html>

@@ -321,6 +321,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function openDeviceManagement(status = 'all') {
+    if (searchInput) searchInput.value = '';
     sbDevicesRegistered.click();
     if (statusFilter) {
       statusFilter.value = status;
@@ -331,7 +332,20 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.device-stat-action').forEach(card => {
     card.addEventListener('click', () => openDeviceManagement(card.dataset.status || 'all'));
   });
-  // deviceStatusBars click listener removed to prevent navigating to Monitored Devices
+  if (deviceStatusBars) {
+    deviceStatusBars.addEventListener('click', event => {
+      const statusRow = event.target.closest('.device-status-row');
+      if (!statusRow) return;
+      openDeviceManagement(statusRow.dataset.status || 'all');
+    });
+    deviceStatusBars.addEventListener('keydown', event => {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      const statusRow = event.target.closest('.device-status-row');
+      if (!statusRow) return;
+      event.preventDefault();
+      openDeviceManagement(statusRow.dataset.status || 'all');
+    });
+  }
   // deviceActionSummary click listener removed
   // btnViewDeviceWork click listener removed to prevent navigating to Monitored Devices
   if (sbAssets) {
@@ -777,7 +791,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const uniqueCategories = new Set();
     const uniqueLocations = new Set();
 
-    assets.forEach(a => {
+    filteredAssets.forEach(a => {
       let val = parseFloat(a.price);
       if (isNaN(val) || val === 0) {
         val = estimateMarketValue(a.name);
@@ -819,8 +833,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const btnExpandMap = document.getElementById('btn-expand-map');
         if (btnExpandMap) {
           btnExpandMap.addEventListener('click', () => {
-            showStandalonePage(devicesSection);
+            openDeviceManagement('all');
             setTimeout(() => {
+              if (mapInstance) mapInstance.invalidateSize({ pan: false, animate: false });
               document.getElementById('map-container').scrollIntoView({ behavior: 'smooth', block: 'center' });
             }, 300);
           });
@@ -829,7 +844,12 @@ document.addEventListener('DOMContentLoaded', () => {
       
       // Update markers
       window.miniMapMarkers.clearLayers();
-      const validDevices = devices.filter(d => d.lat && d.lng);
+      const validDevices = devices.filter(d =>
+        d.latitude !== null && d.latitude !== undefined && d.latitude !== '' &&
+        d.longitude !== null && d.longitude !== undefined && d.longitude !== '' &&
+        Number.isFinite(Number(d.latitude)) && Math.abs(Number(d.latitude)) <= 90 &&
+        Number.isFinite(Number(d.longitude)) && Math.abs(Number(d.longitude)) <= 180
+      );
       validDevices.forEach(d => {
         let color = '#3b82f6';
         if (d.status === 'active') color = '#10b981';
@@ -838,7 +858,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const markerHtml = `<div style="background-color: ${color}; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 4px rgba(0,0,0,0.5);"></div>`;
         const icon = L.divIcon({ html: markerHtml, className: '', iconSize: [12, 12], iconAnchor: [6, 6] });
-        L.marker([parseFloat(d.lat), parseFloat(d.lng)], { icon }).addTo(window.miniMapMarkers)
+        L.marker([Number(d.latitude), Number(d.longitude)], { icon }).addTo(window.miniMapMarkers)
          .bindPopup(`<b>${escapeHtml(d.userName || d.name || 'อุปกรณ์')}</b><br>${escapeHtml(d.position || '')}`);
       });
       
@@ -860,9 +880,9 @@ document.addEventListener('DOMContentLoaded', () => {
         ['Overdue', overdue, 'danger']
       ];
       deviceStatusBars.innerHTML = statusRows.map(([label, count, tone]) => `
-        <div class="device-status-row" style="cursor: default;" data-status="${label.toLowerCase()}">
+        <button type="button" class="device-status-row" data-status="${label.toLowerCase()}" aria-label="เปิดรายการอุปกรณ์สถานะ ${label} จำนวน ${count} รายการ">
           <span>${label}</span><div><i class="${tone}" style="width:${total ? Math.round((count / total) * 100) : 0}%"></i></div><strong>${count}</strong>
-        </div>
+        </button>
       `).join('');
 
       const workItems = [
@@ -1141,7 +1161,7 @@ document.addEventListener('DOMContentLoaded', () => {
       renderedAssetsSignature = assetsSignature;
       assetsDetailList.innerHTML = '';
 
-      if (assets.length === 0) {
+      if (filteredAssets.length === 0) {
         selectedAssetId = null;
         emptyAssetsMsg.classList.remove('hidden');
         assetSelectedCard.innerHTML = '<div class="asset-card-placeholder">ยังไม่มีข้อมูลทรัพย์สิน</div>';
@@ -1193,6 +1213,10 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('edit-asset-category').value = asset.category || '';
         document.getElementById('edit-asset-sn').value = asset.sn || asset.serialNumber || '';
         document.getElementById('edit-asset-location').value = asset.location || '';
+        const editShelf = document.getElementById('edit-asset-shelf');
+        if (editShelf) editShelf.value = asset.shelfLocation || '';
+        const editStatus = document.getElementById('edit-asset-status');
+        if (editStatus) editStatus.value = asset.status || 'available';
         document.getElementById('edit-asset-image').value = ''; // Reset file input
         cameraCaptureFiles.edit = null;
         editAssetDrawer.classList.remove('hidden');
@@ -3073,3 +3097,234 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
+
+
+  // --- Store Borrow & Return Modal Handlers ---
+  let currentStoreAssetId = null;
+
+  window.openStoreModal = (assetId, mode) => {
+    currentStoreAssetId = assetId;
+    const asset = assets.find(a => a.id === assetId);
+    if (!asset) return;
+
+    const modal = document.getElementById('store-action-modal');
+    const titleEl = document.getElementById('store-modal-title');
+    const nameEl = document.getElementById('store-modal-asset-name');
+    const shelfEl = document.getElementById('store-modal-asset-shelf');
+    const borrowSec = document.getElementById('store-borrow-section');
+    const returnSec = document.getElementById('store-return-section');
+
+    nameEl.textContent = asset.name || '-';
+    shelfEl.textContent = 'พิกัดชั้นวาง: ' + (asset.shelfLocation || 'ไม่ระบุ');
+
+    if (mode === 'borrow') {
+      titleEl.innerHTML = '📦 เบิกยืมอุปกรณ์สโตร์ (Check Out)';
+      borrowSec.classList.remove('hidden');
+      returnSec.classList.add('hidden');
+      const nameInput = document.getElementById('borrow-person-name');
+      if (nameInput) {
+        nameInput.value = '';
+        setTimeout(() => nameInput.focus(), 100);
+      }
+      if (document.getElementById('borrow-due-date')) document.getElementById('borrow-due-date').value = '';
+      if (document.getElementById('borrow-note')) document.getElementById('borrow-note').value = '';
+    } else {
+      titleEl.innerHTML = '📥 รับคืนอุปกรณ์เข้าคลังสโตร์ (Check In)';
+      borrowSec.classList.add('hidden');
+      returnSec.classList.remove('hidden');
+      const retNameEl = document.getElementById('return-borrower-name');
+      if (retNameEl) retNameEl.textContent = asset.borrower || 'ไม่ระบุ';
+    }
+
+    modal.classList.remove('hidden');
+  };
+
+  const btnCloseStoreModal = document.getElementById('btn-close-store-modal');
+  if (btnCloseStoreModal) {
+    btnCloseStoreModal.addEventListener('click', () => {
+      document.getElementById('store-action-modal').classList.add('hidden');
+    });
+  }
+
+  const btnSubmitBorrow = document.getElementById('btn-submit-borrow');
+  if (btnSubmitBorrow) {
+    btnSubmitBorrow.addEventListener('click', async () => {
+      const borrower = document.getElementById('borrow-person-name').value.trim();
+      const dueDate = document.getElementById('borrow-due-date').value;
+      const note = document.getElementById('borrow-note').value.trim();
+
+      if (!borrower) {
+        showToast('กรุณากรอกชื่อผู้เบิกหรือช่างผู้ใช้งาน');
+        return;
+      }
+
+      btnSubmitBorrow.disabled = true;
+      btnSubmitBorrow.textContent = 'กำลังบันทึก...';
+
+      try {
+        const res = await fetch('/api/borrow-asset', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            assetId: currentStoreAssetId,
+            borrower,
+            dueDate,
+            note
+          })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showToast('บันทึกการเบิกยืมเรียบร้อย!');
+          document.getElementById('store-action-modal').classList.add('hidden');
+          loadData();
+        } else {
+          showToast(data.error || 'เกิดข้อผิดพลาดในการบันทึก');
+        }
+      } catch (e) {
+        showToast('เครือข่ายขัดข้อง กรุณาลองใหม่');
+      } finally {
+        btnSubmitBorrow.disabled = false;
+        btnSubmitBorrow.textContent = 'ยืนยันจ่ายของออก (Check Out)';
+      }
+    });
+  }
+
+  const btnSubmitReturn = document.getElementById('btn-submit-return');
+  if (btnSubmitReturn) {
+    btnSubmitReturn.addEventListener('click', async () => {
+      const conditionNote = document.getElementById('return-condition').value;
+
+      btnSubmitReturn.disabled = true;
+      btnSubmitReturn.textContent = 'กำลังบันทึกรับคืน...';
+
+      try {
+        const res = await fetch('/api/return-asset', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            assetId: currentStoreAssetId,
+            conditionNote
+          })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showToast('รับคืนอุปกรณ์เข้าคลังสโตร์เรียบร้อย!');
+          document.getElementById('store-action-modal').classList.add('hidden');
+          loadData();
+        } else {
+          showToast(data.error || 'เกิดข้อผิดพลาด');
+        }
+      } catch (e) {
+        showToast('เครือข่ายขัดข้อง กรุณาลองใหม่');
+      } finally {
+        btnSubmitReturn.disabled = false;
+        btnSubmitReturn.textContent = 'รับคืนเข้าสโตร์ (Check In to Rack)';
+      }
+    });
+  }
+
+
+  // --- Store Filter Tabs Setup ---
+  window.storeSelectedFilter = 'all';
+  document.querySelectorAll('.store-filter-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.store-filter-tab').forEach(t => {
+        t.style.background = 'rgba(255,255,255,0.06)';
+        t.style.color = '#cbd5e1';
+      });
+      tab.style.background = '#2563eb';
+      tab.style.color = '#fff';
+      window.storeSelectedFilter = tab.getAttribute('data-filter');
+      renderedAssetsSignature = ''; // Force re-render
+      updateAssetsDashboard();
+    });
+  });
+
+  // --- Export Store Inventory Report (PDF) ---
+  const btnExportStorePdf = document.getElementById('btn-export-store-pdf');
+  if (btnExportStorePdf) {
+    btnExportStorePdf.addEventListener('click', async () => {
+      if (!assets || assets.length === 0) {
+        showToast('ไม่มีข้อมูลพัสดุในระบบสำหรับออกรายงาน');
+        return;
+      }
+
+      const element = document.createElement('div');
+      element.className = 'pdf-report';
+      const now = new Date().toLocaleString('th-TH');
+      const today = new Date().toISOString().split('T')[0];
+
+      let rows = '';
+      assets.forEach((a, idx) => {
+        const isBorrowed = a.status === 'borrowed';
+        const isOverdue = isBorrowed && a.dueDate && a.dueDate < today;
+        const statusText = isOverdue
+          ? '<span style="color: #dc2626; font-weight: bold;">🔴 เกินกำหนดส่งคืน</span>'
+          : isBorrowed
+          ? '<span style="color: #d97706; font-weight: bold;">🟡 กำลังยืม</span>'
+          : '<span style="color: #16a34a; font-weight: bold;">🟢 ในคลังสโตร์</span>';
+
+        const borrowerText = isBorrowed ? `${escapeHtml(a.borrower || '-')}<br><small style="color: #6b7280;">(คืน: ${escapeHtml(a.dueDate || '-')})</small>` : '-';
+
+        rows += `
+          <tr>
+            <td style="text-align: center;">${idx + 1}</td>
+            <td>
+              <strong style="font-size: 11px; color: #111827;">${escapeHtml(a.name || '-')}</strong><br>
+              <span style="font-size: 9px; color: #6b7280;">S/N: ${escapeHtml(a.sn || a.serialNumber || '-')}</span>
+            </td>
+            <td>${escapeHtml(a.category || '-')}</td>
+            <td style="font-weight: 600; color: #2563eb;">${escapeHtml(a.shelfLocation || a.location || '-')}</td>
+            <td>${statusText}</td>
+            <td>${borrowerText}</td>
+          </tr>
+        `;
+      });
+
+      element.innerHTML = `
+        <style>
+          .pdf-report { font-family: 'Plus Jakarta Sans', Arial, sans-serif; color: #1f2937; padding: 15px; background: #fff; }
+          .pdf-header { border-bottom: 2px solid #2563eb; padding-bottom: 10px; margin-bottom: 12px; }
+          .pdf-title { font-size: 18px; font-weight: 800; color: #1e3a8a; margin: 0 0 4px 0; }
+          .pdf-meta { display: flex; justify-content: space-between; font-size: 10px; color: #4b5563; }
+          .pdf-table { width: 100%; border-collapse: collapse; font-size: 9px; margin-top: 10px; }
+          .pdf-table th { background: #f1f5f9; color: #1e293b; font-weight: 700; text-align: left; padding: 6px 8px; border: 1px solid #cbd5e1; }
+          .pdf-table td { padding: 6px 8px; border: 1px solid #e2e8f0; vertical-align: top; }
+          .pdf-table tr:nth-child(even) { background: #f8fafc; }
+        </style>
+        <div class="pdf-header">
+          <h1 class="pdf-title">📦 รายงานสถานะพัสดุ เครื่องมือ และการเบิกยืม (Store & Tool Report)</h1>
+          <div class="pdf-meta">
+            <span><strong>วันที่พิมพ์รายงาน:</strong> ${now}</span>
+            <span><strong>รวมพัสดุในระบบ:</strong> ${assets.length} รายการ</span>
+          </div>
+        </div>
+        <table class="pdf-table">
+          <thead>
+            <tr>
+              <th style="width: 5%; text-align: center;">ลำดับ</th>
+              <th style="width: 25%;">ชื่อพัสดุ / เครื่องมือ</th>
+              <th style="width: 15%;">หมวดหมู่</th>
+              <th style="width: 15%;">พิกัดชั้นวาง (Shelf)</th>
+              <th style="width: 15%;">สถานะ</th>
+              <th style="width: 25%;">ผู้เบิกใช้งาน (Borrower)</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows}
+          </tbody>
+        </table>
+      `;
+
+      const opt = {
+        margin: [0.3, 0.3, 0.3, 0.3],
+        filename: `Store_Inventory_Report_${new Date().toISOString().slice(0, 10)}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, letterRendering: true, backgroundColor: '#ffffff' },
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }
+      };
+
+      showToast('กำลังสร้างรายงานพัสดุสโตร์ PDF...');
+      await savePdfReport(element, opt);
+    });
+  }

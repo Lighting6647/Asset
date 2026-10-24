@@ -9,6 +9,14 @@ const PUBLIC_DIR = path.join(__dirname, 'public');
 const DB_FILE = path.join(__dirname, 'data', 'db.json');
 const ACTION_PASSWORD = process.env.ACTION_PASSWORD || '664749';
 const DASHBOARD_SYNC_TOKEN = process.env.IOS_DASHBOARD_SYNC_TOKEN || '';
+const { createLarkReminders } = require('./lark-reminders');
+const larkReminders = createLarkReminders({ readDb, persist: async db => {
+  if (JSONBIN_API_KEY && JSONBIN_BIN_ID) await saveToJsonBin(db);
+  else {
+    fs.mkdirSync(path.dirname(DB_FILE), { recursive: true });
+    fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2));
+  }
+} });
 
 function requireActionPassword(data, res) {
   if (!data || data.password !== ACTION_PASSWORD) {
@@ -290,6 +298,31 @@ const server = http.createServer((req, res) => {
   // Strip query string for robust routing and file serving
   const qPos = req.url.indexOf('?');
   const pathname = qPos !== -1 ? req.url.substring(0, qPos) : req.url;
+
+  if (req.method === 'POST' && pathname === '/api/lark-reminders') {
+    let body = '';
+    req.on('data', chunk => { body += chunk; if (body.length > 150000) req.destroy(); });
+    req.on('end', async () => {
+      try {
+        const data = JSON.parse(body);
+        if (!requireActionPassword(data, res)) return;
+        let result;
+        if (data.action === 'save') { await larkReminders.saveRecipient(data); result = larkReminders.overview(); }
+        else if (data.action === 'test') result = await larkReminders.testConnection();
+        else if (data.action === 'send') result = await larkReminders.run({ scheduled: false });
+        else if (data.action === 'status') result = larkReminders.overview();
+        else if (data.action === 'summary') result = await larkReminders.sendSummary({ scheduled: false });
+        else if (data.action === 'recover') result = await larkReminders.recover(data);
+        else throw new Error('Unknown action');
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(result));
+      } catch (error) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: error.message }));
+      }
+    });
+    return;
+  }
 
   // Enable CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -827,7 +860,7 @@ const server = http.createServer((req, res) => {
       const body = chunks.join('');
       try {
         const data = JSON.parse(body);
-        const { name, category, serialNumber, location, type, image } = data;
+        const { name, category, serialNumber, location, shelfLocation, type, image, status, borrower, dueDate } = data;
 
         if (!name || name.trim() === '') {
           res.writeHead(400, { 'Content-Type': 'application/json' });
@@ -844,6 +877,10 @@ const server = http.createServer((req, res) => {
           category: (category || '').trim(),
           sn: (serialNumber || '').trim(),
           location: (location || '').trim(),
+          shelfLocation: (shelfLocation || '').trim(),
+          status: status || 'available',
+          borrower: (borrower || '').trim(),
+          dueDate: dueDate || null,
           type: type || 'custom',
           image: image || null,
           registeredAt: new Date().toISOString(),
@@ -874,7 +911,7 @@ const server = http.createServer((req, res) => {
       const body = chunks.join('');
       try {
         const data = JSON.parse(body);
-        const { assetId, name, category, serialNumber, location, type, image } = data;
+        const { assetId, name, category, serialNumber, location, shelfLocation, type, image, status, borrower, dueDate } = data;
 
         if (!assetId || !name || name.trim() === '') {
           res.writeHead(400, { 'Content-Type': 'application/json' });
@@ -894,6 +931,10 @@ const server = http.createServer((req, res) => {
         db.assets[index].category = (category || '').trim();
         db.assets[index].sn = (serialNumber || '').trim();
         db.assets[index].location = (location || '').trim();
+        if (shelfLocation !== undefined) db.assets[index].shelfLocation = (shelfLocation || '').trim();
+        if (status !== undefined) db.assets[index].status = status;
+        if (borrower !== undefined) db.assets[index].borrower = (borrower || '').trim();
+        if (dueDate !== undefined) db.assets[index].dueDate = dueDate;
         db.assets[index].type = type || db.assets[index].type || 'custom';
         
         // Only update image if it's provided in the payload (so we don't wipe it out if omitted)
@@ -990,6 +1031,86 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  
+  // POST /api/borrow-asset - Check out asset / borrow
+  if (req.method === 'POST' && pathname === '/api/borrow-asset') {
+    const chunks = [];
+    req.on('data', chunk => chunks.push(chunk));
+    req.on('end', () => {
+      try {
+        const data = JSON.parse(chunks.join(''));
+        const { assetId, borrower, dueDate, note } = data;
+        if (!assetId || !borrower) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Asset ID and Borrower name are required.' }));
+          return;
+        }
+        const db = readDb();
+        const index = db.assets.findIndex(a => a.id === assetId);
+        if (index === -1) {
+          res.writeHead(404, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Asset not found.' }));
+          return;
+        }
+        db.assets[index].status = 'borrowed';
+        db.assets[index].borrower = borrower.trim();
+        db.assets[index].borrowedAt = new Date().toISOString();
+        db.assets[index].dueDate = dueDate || null;
+        db.assets[index].borrowNote = (note || '').trim();
+
+        addLog(db, assetId, db.assets[index].name, '[Store] เบิกยืมอุปกรณ์โดย: ' + borrower.trim() + (dueDate ? ' (กำหนดคืน: ' + dueDate + ')' : ''));
+        writeDb(db);
+
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ message: 'บันทึกการเบิกยืมสำเร็จ', asset: db.assets[index] }));
+      } catch (err) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Invalid payload: ' + err.message }));
+      }
+    });
+    return;
+  }
+
+  // POST /api/return-asset - Check in asset / return
+  if (req.method === 'POST' && pathname === '/api/return-asset') {
+    const chunks = [];
+    req.on('data', chunk => chunks.push(chunk));
+    req.on('end', () => {
+      try {
+        const data = JSON.parse(chunks.join(''));
+        const { assetId, conditionNote } = data;
+        if (!assetId) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Asset ID is required.' }));
+          return;
+        }
+        const db = readDb();
+        const index = db.assets.findIndex(a => a.id === assetId);
+        if (index === -1) {
+          res.writeHead(404, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Asset not found.' }));
+          return;
+        }
+        const prevBorrower = db.assets[index].borrower || 'ไม่ระบุ';
+        db.assets[index].status = 'available';
+        db.assets[index].borrower = '';
+        db.assets[index].dueDate = null;
+        db.assets[index].returnedAt = new Date().toISOString();
+        db.assets[index].lastScannedAt = new Date().toISOString();
+
+        addLog(db, assetId, db.assets[index].name, '[Store] รับคืนอุปกรณ์เข้าคลังจาก: ' + prevBorrower + (conditionNote ? ' (สภาพ: ' + conditionNote + ')' : ''));
+        writeDb(db);
+
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ message: 'รับคืนอุปกรณ์เข้าคลังสโตร์เรียบร้อย', asset: db.assets[index] }));
+      } catch (err) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Invalid payload: ' + err.message }));
+      }
+    });
+    return;
+  }
+
   // --- Static File Server ---
   let reqUrl = pathname === '/' ? '/index.html' : pathname;
   // Prevent directory traversal attacks
@@ -1022,6 +1143,12 @@ const server = http.createServer((req, res) => {
 });
 
 initDb(() => {
+  async function pollLark() {
+    try { await larkReminders.run(); } catch (error) { console.error('Lark reminder:', error.message); }
+    try { await larkReminders.sendSummary(); } catch (error) { console.error('Lark summary:', error.message); }
+  }
+  setInterval(pollLark, 60000).unref();
+  pollLark();
   server.listen(PORT, () => {
     console.log(`==================================================`);
     console.log(`📱 iOS Device Monitor server is running locally!`);

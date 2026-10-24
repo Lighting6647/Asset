@@ -6,7 +6,7 @@
   <meta name="theme-color" media="(prefers-color-scheme: light)" content="#1e1b4b">
   <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#070913">
   <meta name="color-scheme" content="dark light">
-  <title>Asset Check-In</title>
+  <title>Store Quick Check-In / Check-Out</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&family=Outfit:wght@300;400;600;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -14,27 +14,34 @@
 </head>
 <body style="display: flex; justify-content: center; align-items: center; min-height: 100vh; background: var(--bg-dark); margin: 0; padding: 1rem;">
   
-  <div class="background-effects">
-    <div class="glow-orb orb-purple"></div>
+  <div class="background-effects"></div>
   </div>
 
   <div class="client-card glass-card" style="max-width: 400px; width: 100%; text-align: center;">
     <header class="client-header">
-      <span class="badge-ios" style="background: var(--accent-purple); color: #fff;">ASSET CHECK-IN</span>
+      <span class="badge-ios" style="background: var(--accent-purple); color: #fff;">STORE & TOOL TRACKER</span>
       <h1 id="asset-name">Loading...</h1>
       <p class="subtitle" id="asset-sn">Please wait</p>
     </header>
 
-    <div class="verify-orb-container" id="checkin-container" style="display: none;">
-      <button id="btn-checkin" class="verify-orb-btn ripple" style="background: linear-gradient(135deg, var(--accent-purple), var(--accent-indigo)); box-shadow: 0 0 40px rgba(139, 92, 246, 0.4);">
-        <span class="orb-content">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="orb-icon">
-            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-            <polyline points="22 4 12 14.01 9 11.01"></polyline>
-          </svg>
-          Check-In Asset
-        </span>
-      </button>
+    <div id="checkin-container" style="display: none; margin-top: 1.5rem;">
+      <div id="store-asset-badge" style="margin-bottom: 1rem;"></div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1.25rem;">
+        <button id="btn-quick-borrow" class="btn btn-primary" style="padding: 0.85rem; font-weight: 600; background: #2563eb; border-radius: 12px; font-size: 0.95rem;">
+          📤 เบิกยืม
+        </button>
+        <button id="btn-quick-return" class="btn btn-secondary" style="padding: 0.85rem; font-weight: 600; background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 12px; font-size: 0.95rem;">
+          📥 รับคืน
+        </button>
+      </div>
+
+      <!-- Quick borrow sub-form -->
+      <div id="quick-borrow-box" class="hidden" style="text-align: left; background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 12px; margin-bottom: 1rem;">
+        <label style="font-size: 0.8rem; color: #cbd5e1; display: block; margin-bottom: 0.3rem;">ชื่อผู้เบิก / ช่าง *</label>
+        <input type="text" id="quick-borrower" placeholder="ชื่อ-สกุล / แผนก" style="width: 100%; padding: 0.6rem; border-radius: 8px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); color: #fff; margin-bottom: 0.6rem;">
+        <button id="btn-confirm-borrow" class="btn btn-primary" style="width: 100%; padding: 0.6rem; background: #2563eb;">ยืนยันจ่ายของ</button>
+      </div>
     </div>
 
     <div id="status-message" style="margin-top: 1.5rem; color: #fff; font-size: 1rem;"></div>
@@ -86,34 +93,91 @@
         });
     }
 
-    btnCheckin.addEventListener('click', () => {
-      btnCheckin.disabled = true;
-      btnCheckin.style.opacity = '0.5';
-      statusEl.textContent = 'Checking in...';
+    let currentAsset = null;
+    const btnQuickBorrow = document.getElementById('btn-quick-borrow');
+    const btnQuickReturn = document.getElementById('btn-quick-return');
+    const quickBorrowBox = document.getElementById('quick-borrow-box');
+    const btnConfirmBorrow = document.getElementById('btn-confirm-borrow');
+    const storeAssetBadge = document.getElementById('store-asset-badge');
 
-      fetch('/api/scan-asset', {
+    function updateAssetDisplay(asset) {
+      currentAsset = asset;
+      const isBorrowed = asset.status === 'borrowed';
+      storeAssetBadge.innerHTML = isBorrowed
+        ? '<div style="padding: 6px 12px; background: rgba(245, 158, 11, 0.2); color: #fbbf24; border-radius: 8px; font-size: 0.85rem; border: 1px solid rgba(245, 158, 11, 0.35);">🟡 ปัจจุบันถูกเบิกยืมโดย: <strong>' + (asset.borrower || 'ไม่ระบุ') + '</strong></div>'
+        : '<div style="padding: 6px 12px; background: rgba(16, 185, 129, 0.2); color: #34d399; border-radius: 8px; font-size: 0.85rem; border: 1px solid rgba(16, 185, 129, 0.35);">🟢 สถานะ: พร้อมใช้งานในสโตร์ (ชั้น: ' + (asset.shelfLocation || '-') + ')</div>';
+    }
+
+    // Wrap asset loading
+    fetch('/api/assets')
+      .then(res => res.json())
+      .then(data => {
+        const asset = data.assets.find(a => a.id === assetId);
+        if (asset) {
+          updateAssetDisplay(asset);
+        }
+      });
+
+    btnQuickBorrow.addEventListener('click', () => {
+      quickBorrowBox.classList.toggle('hidden');
+      if (!quickBorrowBox.classList.contains('hidden')) {
+        document.getElementById('quick-borrower').focus();
+      }
+    });
+
+    btnConfirmBorrow.addEventListener('click', () => {
+      const borrower = document.getElementById('quick-borrower').value.trim();
+      if (!borrower) {
+        showToast('กรุณากรอกชื่อผู้เบิก');
+        return;
+      }
+      btnConfirmBorrow.disabled = true;
+      btnConfirmBorrow.textContent = 'กำลังบันทึก...';
+
+      fetch('/api/borrow-asset', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ assetId })
+        body: JSON.stringify({ assetId, borrower })
       })
       .then(res => res.json())
       .then(data => {
         if (data.error) {
           showToast(data.error);
-          statusEl.textContent = 'Check-in failed.';
-          btnCheckin.disabled = false;
-          btnCheckin.style.opacity = '1';
         } else {
-          showToast('Asset Checked-In Successfully!');
-          statusEl.innerHTML = '<span style="color: #10b981; font-weight: bold;">✔ Checked In Successfully</span><br><br>You can close this window.';
-          container.style.display = 'none';
+          showToast('บันทึกการเบิกยืมสำเร็จ!');
+          statusEl.innerHTML = '<span style="color: #60a5fa; font-weight: bold;">เบิกจ่ายอุปกรณ์เรียบร้อย</span>';
+          updateAssetDisplay(data.asset);
+          quickBorrowBox.classList.add('hidden');
         }
       })
-      .catch(err => {
-        showToast('Network error.');
-        statusEl.textContent = 'Network error during check-in.';
-        btnCheckin.disabled = false;
-        btnCheckin.style.opacity = '1';
+      .finally(() => {
+        btnConfirmBorrow.disabled = false;
+        btnConfirmBorrow.textContent = 'ยืนยันจ่ายของ';
+      });
+    });
+
+    btnQuickReturn.addEventListener('click', () => {
+      btnQuickReturn.disabled = true;
+      statusEl.textContent = 'กำลังบันทึกรับคืน...';
+
+      fetch('/api/return-asset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ assetId, conditionNote: 'สแกนรับคืนผ่านมือถือ' })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.error) {
+          showToast(data.error);
+          statusEl.textContent = 'เกิดข้อผิดพลาด';
+        } else {
+          showToast('รับคืนอุปกรณ์เข้าคลังสโตร์เรียบร้อย!');
+          statusEl.innerHTML = '<span style="color: #10b981; font-weight: bold;">รับคืนเข้าคลังสโตร์เรียบร้อย ✅</span>';
+          updateAssetDisplay(data.asset);
+        }
+      })
+      .finally(() => {
+        btnQuickReturn.disabled = false;
       });
     });
   </script>
