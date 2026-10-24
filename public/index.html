@@ -212,11 +212,17 @@
           <div class="device-dashboard-heading"><div><h2>ภาพรวมสถานะอุปกรณ์</h2><p>สัดส่วนจากอุปกรณ์ทั้งหมดในระบบ</p></div><strong id="device-health-percent">0%</strong></div>
           <div id="device-status-bars" class="device-status-bars"></div>
           <div style="margin-top: 1rem; flex: 1; display: flex; flex-direction: column;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-              <span style="font-size: 0.85rem; color: var(--text-muted);">พิกัดอุปกรณ์ล่าสุด</span>
-              <button id="btn-expand-map" class="btn btn-secondary" style="padding: 0.2rem 0.5rem; font-size: 0.7rem;">ดูแผนที่ใหญ่</button>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
+              <div>
+                <span style="font-size: 0.88rem; font-weight: 600; color: #fff;">📦 ผังชั้นวางและสถานะการยืม (Store Racks)</span>
+                <span style="font-size: 0.75rem; color: var(--text-muted); display: block;">ความจุและการกระจายตัวของพัสดุในสโตร์</span>
+              </div>
+              <button id="btn-quick-to-store" class="btn btn-secondary" style="padding: 0.25rem 0.6rem; font-size: 0.75rem; color: #60a5fa; border-color: rgba(96, 165, 250, 0.4);">
+                เปิดคลังสโตร์ →
+              </button>
             </div>
-            <div id="mini-map-container" style="flex: 1; min-height: 160px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); overflow: hidden; background: rgba(0,0,0,0.2); z-index: 10;"></div>
+            <div id="store-rack-summary-container" style="flex: 1; min-height: 180px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); padding: 0.85rem; background: rgba(15, 23, 42, 0.5); display: flex; flex-direction: column; gap: 0.65rem;">
+            </div>
           </div>
 
         </article>

@@ -823,49 +823,72 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     
-    // Mini Map Widget
-    if (typeof L !== 'undefined' && document.getElementById('mini-map-container')) {
-      if (!window.miniMapInstance) {
-        window.miniMapInstance = L.map('mini-map-container', { zoomControl: false, attributionControl: false }).setView([13.736717, 100.523186], 5);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(window.miniMapInstance);
-        window.miniMapMarkers = L.layerGroup().addTo(window.miniMapInstance);
-        
-        const btnExpandMap = document.getElementById('btn-expand-map');
-        if (btnExpandMap) {
-          btnExpandMap.addEventListener('click', () => {
-            openDeviceManagement('all');
-            setTimeout(() => {
-              if (mapInstance) mapInstance.invalidateSize({ pan: false, animate: false });
-              document.getElementById('map-container').scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }, 300);
-          });
-        }
+    // Store Racks & Borrowing Summary Widget
+    const rackContainer = document.getElementById('store-rack-summary-container');
+    if (rackContainer) {
+      const btnQuickToStore = document.getElementById('btn-quick-to-store');
+      if (btnQuickToStore && !btnQuickToStore._hasBound) {
+        btnQuickToStore._hasBound = true;
+        btnQuickToStore.addEventListener('click', () => {
+          const btn = document.getElementById('cc-btn-assets-reg') || document.getElementById('sb-assets-registered');
+          if (btn) btn.click();
+        });
       }
-      
-      // Update markers
-      window.miniMapMarkers.clearLayers();
-      const validDevices = devices.filter(d =>
-        d.latitude !== null && d.latitude !== undefined && d.latitude !== '' &&
-        d.longitude !== null && d.longitude !== undefined && d.longitude !== '' &&
-        Number.isFinite(Number(d.latitude)) && Math.abs(Number(d.latitude)) <= 90 &&
-        Number.isFinite(Number(d.longitude)) && Math.abs(Number(d.longitude)) <= 180
-      );
-      validDevices.forEach(d => {
-        let color = '#3b82f6';
-        if (d.status === 'active') color = '#10b981';
-        if (d.status === 'pending') color = '#f59e0b';
-        if (d.status === 'overdue') color = '#ef4444';
-        
-        const markerHtml = `<div style="background-color: ${color}; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 4px rgba(0,0,0,0.5);"></div>`;
-        const icon = L.divIcon({ html: markerHtml, className: '', iconSize: [12, 12], iconAnchor: [6, 6] });
-        L.marker([Number(d.latitude), Number(d.longitude)], { icon }).addTo(window.miniMapMarkers)
-         .bindPopup(`<b>${escapeHtml(d.userName || d.name || 'อุปกรณ์')}</b><br>${escapeHtml(d.position || '')}`);
+
+      const totalAssets = assets ? assets.length : 0;
+      const inStore = assets ? assets.filter(a => !a.status || a.status === 'available').length : 0;
+      const borrowed = assets ? assets.filter(a => a.status === 'borrowed').length : 0;
+      const today = new Date().toISOString().split('T')[0];
+      const overdue = assets ? assets.filter(a => a.status === 'borrowed' && a.dueDate && a.dueDate < today).length : 0;
+
+      // Group by Shelf / Rack
+      const rackMap = new Map();
+      (assets || []).forEach(a => {
+        const rack = (a.shelfLocation || a.location || 'คลังกลาง / ทั่วไป').trim();
+        rackMap.set(rack, (rackMap.get(rack) || 0) + 1);
       });
-      
-      if (validDevices.length > 0) {
-        const group = new L.featureGroup(window.miniMapMarkers.getLayers());
-        window.miniMapInstance.fitBounds(group.getBounds(), { padding: [10, 10], maxZoom: 12 });
-      }
+      const topRacks = Array.from(rackMap.entries()).sort((a, b) => b[1] - a[1]).slice(0, 4);
+
+      const rackPills = topRacks.length
+        ? topRacks.map(([rackName, count]) => {
+            const pct = totalAssets > 0 ? Math.round((count / totalAssets) * 100) : 0;
+            return `
+              <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 6px 10px; display: flex; flex-direction: column; gap: 4px;">
+                <div style="display: flex; justify-content: space-between; font-size: 0.78rem;">
+                  <strong style="color: #60a5fa; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px;">${escapeHtml(rackName)}</strong>
+                  <span style="color: #cbd5e1; font-weight: 600;">${count} ชิ้น</span>
+                </div>
+                <div style="height: 4px; border-radius: 999px; background: rgba(255,255,255,0.1); overflow: hidden;">
+                  <div style="width: ${pct}%; height: 100%; background: linear-gradient(90deg, #3b82f6, #60a5fa); border-radius: 999px;"></div>
+                </div>
+              </div>
+            `;
+          }).join('')
+        : '<div style="color: #64748b; font-size: 0.8rem; text-align: center; padding: 10px;">ยังไม่มีข้อมูลชั้นวางในระบบ</div>';
+
+      rackContainer.innerHTML = `
+        <!-- Quick Ratios -->
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; text-align: center; margin-bottom: 0.35rem;">
+          <div style="background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.3); border-radius: 8px; padding: 6px 4px;">
+            <span style="font-size: 0.7rem; color: #34d399; display: block;">🟢 ในคลัง</span>
+            <strong style="font-size: 1.15rem; color: #34d399;">${inStore}</strong>
+          </div>
+          <div style="background: rgba(245,158,11,0.12); border: 1px solid rgba(245,158,11,0.3); border-radius: 8px; padding: 6px 4px;">
+            <span style="font-size: 0.7rem; color: #fbbf24; display: block;">🟡 ถูกยืม</span>
+            <strong style="font-size: 1.15rem; color: #fbbf24;">${borrowed}</strong>
+          </div>
+          <div style="background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.3); border-radius: 8px; padding: 6px 4px;">
+            <span style="font-size: 0.7rem; color: #f87171; display: block;">🔴 ค้างส่ง</span>
+            <strong style="font-size: 1.15rem; color: #f87171;">${overdue}</strong>
+          </div>
+        </div>
+
+        <!-- Shelf Breakdown Heading -->
+        <div style="font-size: 0.75rem; color: #94a3b8; font-weight: 500; margin-top: 2px;">กระจายตามชั้นวาง (Top Racks / Shelves):</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.45rem;">
+          ${rackPills}
+        </div>
+      `;
     }
 
     const dashboardSignature = JSON.stringify(devices.map(device => [device.id, device.status, device.userName || device.name, device.position]));
