@@ -41,16 +41,16 @@
       <nav class="sidebar-nav">
         <button id="sb-dashboard" class="sidebar-menu-item active">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sb-icon"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg>
-          <span class="sb-text">แดชบอร์ดอุปกรณ์ (Devices)</span>
+          <span class="sb-text">แดชบอร์ดสโตร์ (Store Dashboard)</span>
         </button>
         <div id="sb-devices-submenu" class="sidebar-submenu">
           <button id="sb-devices-registered" class="sidebar-submenu-item">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sb-submenu-icon"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg>
-            <span>ข้อมูลอุปกรณ์ที่ลงทะเบียน</span>
+            <span>ครุภัณฑ์และอุปกรณ์ช่าง</span>
           </button>
           <button id="sb-activity-log" class="sidebar-submenu-item">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sb-submenu-icon"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            <span>ประวัติการทำรายการ (Audit Log)</span>
+            <span>ประวัติการเบิกจ่ายและรับคืน</span>
           </button>
           
         </div>
@@ -71,7 +71,7 @@
         </div>
         <button id="sb-export-devices-pdf" class="sidebar-menu-item">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sb-icon"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
-          <span class="sb-text">รายงานอุปกรณ์ (Devices)</span>
+          <span class="sb-text">รายงานการเบิกยืมช่าง (PDF)</span>
         </button>
         <button id="sb-export-assets-pdf" class="sidebar-menu-item">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sb-icon"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M8 18v-2"/><path d="M12 18v-4"/><path d="M16 18v-6"/></svg>
@@ -173,11 +173,11 @@
             <div class="brand-main-title">
               <span class="brand-name-primary">iAsset</span>
               <span class="brand-separator">/</span>
-              <span class="brand-name-secondary">AssetCloud</span>
+              <span class="brand-name-secondary">Store & Tools</span>
             </div>
             <div class="brand-sub-badge">
               <span class="brand-live-dot"></span>
-              <span>ระบบบริหารจัดการทรัพย์สินและอุปกรณ์</span>
+              <span>ระบบบริหารจัดการสโตร์ คลังพัสดุ และเครื่องมือช่าง</span>
             </div>
           </div>
         </div>
@@ -186,11 +186,11 @@
       <!-- STATS OVERVIEW -->
       <section class="stats-grid">
         <div class="stat-card glass-card" style="cursor: default;">
-          <span class="stat-title">อุปกรณ์ทั้งหมด (Devices)</span>
+          <span class="stat-title">พัสดุในคลังสโตร์ (Available)</span>
           <span id="stat-top-devices" class="stat-value">0</span>
         </div>
         <div class="stat-card glass-card" style="cursor: default;">
-          <span class="stat-title">ทรัพย์สินทั้งหมด (Assets)</span>
+          <span class="stat-title">ยอดกำลังเบิกยืม (Borrowed)</span>
           <span id="stat-top-assets" class="stat-value" style="color: #6366f1;">0</span>
         </div>
         <div class="stat-card glass-card" style="cursor: default;">
@@ -198,18 +198,18 @@
           <span id="stat-top-value" class="stat-value" style="color: #10b981;">฿0</span>
         </div>
         <div class="stat-card glass-card" style="cursor: default;">
-          <span class="stat-title">หมวดหมู่ (Categories)</span>
+          <span class="stat-title">หมวดหมู่พัสดุ (Categories)</span>
           <span id="stat-top-categories" class="stat-value" style="color: #f59e0b;">0</span>
         </div>
         <div class="stat-card glass-card" style="cursor: default;">
-          <span class="stat-title">สถานที่ (Locations)</span>
+          <span class="stat-title">ชั้นวาง/ล็อกเก็บ (Shelves & Bins)</span>
           <span id="stat-top-locations" class="stat-value" style="color: #8b5cf6;">0</span>
         </div>
       </section>
 
       <section class="device-dashboard-grid">
         <article class="glass-card device-dashboard-panel" style="display: flex; flex-direction: column;">
-          <div class="device-dashboard-heading"><div><h2>ภาพรวมสถานะอุปกรณ์</h2><p>สัดส่วนจากอุปกรณ์ทั้งหมดในระบบ</p></div><strong id="device-health-percent">0%</strong></div>
+          <div class="device-dashboard-heading"><div><h2>ภาพรวมสถานะพัสดุในสโตร์</h2><p>สัดส่วนความพร้อมใช้งานและการเบิกยืม</p></div><strong id="device-health-percent">0%</strong></div>
           <div id="device-status-bars" class="device-status-bars"></div>
           <div style="margin-top: 1rem; flex: 1; display: flex; flex-direction: column;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
