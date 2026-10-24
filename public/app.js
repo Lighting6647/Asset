@@ -1427,7 +1427,9 @@ document.addEventListener('DOMContentLoaded', () => {
   fillSettingsForm(initialUiSettings);
   applyUiSettings(initialUiSettings);
 
+  let currentOpenedQrAsset = null;
   function openAssetQrModal(asset, qrUrl) {
+    currentOpenedQrAsset = asset;
     qrModalTitle.textContent = asset.name || 'ทรัพย์สิน';
     qrModalSn.textContent = `S/N: ${asset.sn || asset.serialNumber || '-'}`;
     currentQrDownloadName = `${asset.name || 'asset'}-${asset.sn || asset.serialNumber || asset.id}-qr`
@@ -3326,5 +3328,267 @@ document.addEventListener('DOMContentLoaded', () => {
 
       showToast('กำลังสร้างรายงานพัสดุสโตร์ PDF...');
       await savePdfReport(element, opt);
+    });
+  }
+
+
+  // --- Feature 1: Print Standard Shelf Label (สติกเกอร์ติดชั้นวาง) ---
+  const btnPrintShelfLabel = document.getElementById('btn-print-shelf-label');
+  if (btnPrintShelfLabel) {
+    btnPrintShelfLabel.addEventListener('click', () => {
+      if (!currentOpenedQrAsset) {
+        showToast('ไม่พบข้อมูลพัสดุสำหรับพิมพ์สติกเกอร์');
+        return;
+      }
+      const canvas = qrcodeContainer.querySelector('canvas');
+      const image = qrcodeContainer.querySelector('img');
+      const qrDataUrl = canvas?.toDataURL('image/png') || image?.src;
+      if (!qrDataUrl) {
+        showToast('ไม่สามารถสร้างรูป QR ได้');
+        return;
+      }
+
+      const printWin = window.open('', '_blank', 'width=520,height=420');
+      if (!printWin) {
+        showToast('กรุณาเปิดการอนุญาต Pop-up บนเบราว์เซอร์เพื่อพิมพ์สติกเกอร์');
+        return;
+      }
+
+      printWin.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Shelf Label - ${escapeHtml(currentOpenedQrAsset.name || 'Asset')}</title>
+          <style>
+            @page { size: 80mm 50mm; margin: 0; }
+            body {
+              font-family: 'Plus Jakarta Sans', Arial, sans-serif;
+              margin: 0;
+              padding: 10px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              height: 100vh;
+              box-sizing: border-box;
+            }
+            .label-card {
+              width: 75mm;
+              height: 44mm;
+              border: 2px dashed #000;
+              border-radius: 8px;
+              padding: 8px;
+              display: flex;
+              gap: 10px;
+              box-sizing: border-box;
+              align-items: center;
+            }
+            .label-qr img {
+              width: 80px;
+              height: 80px;
+              display: block;
+            }
+            .label-info {
+              flex: 1;
+              overflow: hidden;
+            }
+            .label-title {
+              font-size: 13px;
+              font-weight: 800;
+              color: #000;
+              margin-bottom: 3px;
+              line-height: 1.2;
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+            }
+            .label-shelf {
+              display: inline-block;
+              font-size: 11px;
+              font-weight: 700;
+              background: #000;
+              color: #fff;
+              padding: 2px 6px;
+              border-radius: 4px;
+              margin-bottom: 4px;
+            }
+            .label-meta {
+              font-size: 9px;
+              color: #333;
+              line-height: 1.3;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="label-card">
+            <div class="label-qr">
+              <img src="${qrDataUrl}" alt="QR">
+            </div>
+            <div class="label-info">
+              <div class="label-shelf">ชั้นวาง: ${escapeHtml(currentOpenedQrAsset.shelfLocation || 'คลัง A')}</div>
+              <div class="label-title">${escapeHtml(currentOpenedQrAsset.name || 'พัสดุ')}</div>
+              <div class="label-meta">
+                <div><strong>S/N:</strong> ${escapeHtml(currentOpenedQrAsset.sn || currentOpenedQrAsset.serialNumber || '-')}</div>
+                <div><strong>หมวดหมู่:</strong> ${escapeHtml(currentOpenedQrAsset.category || '-')}</div>
+                <div><strong>ID:</strong> ${escapeHtml(currentOpenedQrAsset.id.substring(4))}</div>
+              </div>
+            </div>
+          </div>
+          <script>
+            window.onload = function() {
+              window.print();
+              setTimeout(() => window.close(), 600);
+            };
+          </script>
+        </body>
+        </html>
+      `);
+      printWin.document.close();
+    });
+  }
+
+  // --- Feature 2: Store Cycle Count Mode (ตรวจนับสต็อกด่วนต่อเนื่อง) ---
+  let cycleCountScanner = null;
+  const cycleCountScannedIds = new Set();
+
+  function openCycleCountModal() {
+    const modal = document.getElementById('cycle-count-modal');
+    if (!modal) return;
+    modal.classList.remove('hidden');
+
+    cycleCountScannedIds.clear();
+    updateCycleCountUI();
+
+    document.getElementById('cycle-total-count').textContent = assets ? assets.length : 0;
+    document.getElementById('cycle-latest-scan-status').textContent = 'พร้อมตรวจนับ กรุณาส่อง QR Code';
+
+    if (typeof Html5QrcodeScanner !== 'undefined' && !cycleCountScanner) {
+      try {
+        cycleCountScanner = new Html5QrcodeScanner(
+          'cycle-qr-reader',
+          { fps: 15, qrbox: { width: 220, height: 220 }, aspectRatio: 1.0 },
+          false
+        );
+        cycleCountScanner.render(onCycleScanSuccess, () => {});
+      } catch (err) {
+        console.error('Cycle QR init failed', err);
+      }
+    }
+  }
+
+  function closeCycleCountModal() {
+    const modal = document.getElementById('cycle-count-modal');
+    if (modal) modal.classList.add('hidden');
+    if (cycleCountScanner) {
+      cycleCountScanner.clear().catch(e => console.error(e));
+      cycleCountScanner = null;
+    }
+  }
+
+  async function recordCycleAsset(rawId) {
+    let cleanId = rawId.trim();
+    if (cleanId.includes('?id=')) {
+      cleanId = cleanId.split('?id=')[1].split('&')[0];
+    }
+    if (!cleanId.startsWith('ast-')) {
+      const match = assets.find(a => (a.sn && a.sn === cleanId) || (a.id && a.id.endsWith(cleanId)));
+      if (match) cleanId = match.id;
+    }
+
+    const asset = assets.find(a => a.id === cleanId);
+    const statusEl = document.getElementById('cycle-latest-scan-status');
+
+    if (!asset) {
+      if (statusEl) statusEl.innerHTML = '<span style="color: #f87171;">❌ ไม่พบพัสดุรหัส ' + escapeHtml(cleanId) + '</span>';
+      return;
+    }
+
+    if (cycleCountScannedIds.has(asset.id)) {
+      if (statusEl) statusEl.innerHTML = '<span style="color: #fbbf24;">⚠️ เคยตรวจนับชิ้นนี้ไปแล้ว: ' + escapeHtml(asset.name) + '</span>';
+      return;
+    }
+
+    // Call server API to log check-in
+    try {
+      await fetch('/api/scan-asset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ assetId: asset.id })
+      });
+      cycleCountScannedIds.add(asset.id);
+      asset.lastScannedAt = new Date().toISOString();
+
+      if (statusEl) statusEl.innerHTML = '<span style="color: #34d399;">✅ นับสำเร็จ: ' + escapeHtml(asset.name) + ' (ชั้น ' + escapeHtml(asset.shelfLocation || '-') + ')</span>';
+      updateCycleCountUI();
+    } catch (e) {
+      if (statusEl) statusEl.innerHTML = '<span style="color: #f87171;">บันทึกล้มเหลว กรุณาสแกนใหม่</span>';
+    }
+  }
+
+  function onCycleScanSuccess(decodedText) {
+    recordCycleAsset(decodedText);
+  }
+
+  function updateCycleCountUI() {
+    document.getElementById('cycle-scanned-count').textContent = cycleCountScannedIds.size;
+    const listEl = document.getElementById('cycle-scanned-list');
+    if (!listEl) return;
+
+    if (cycleCountScannedIds.size === 0) {
+      listEl.innerHTML = '<div style="color: #64748b; font-size: 0.8rem; text-align: center; padding: 1rem;">ยังไม่มีรายการที่นับ</div>';
+      return;
+    }
+
+    const items = Array.from(cycleCountScannedIds).map(id => {
+      const a = assets.find(x => x.id === id);
+      return `
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 0.8rem;">
+          <span style="color: #fff; font-weight: 600;">${escapeHtml(a ? a.name : id)}</span>
+          <span style="color: #60a5fa; font-size: 0.75rem;">${escapeHtml(a ? (a.shelfLocation || 'คลัง A') : '')}</span>
+        </div>
+      `;
+    }).reverse().join('');
+    listEl.innerHTML = items;
+  }
+
+  // Hook Cycle Count to btnFastAudit (cc-btn-fast-audit)
+  if (btnFastAudit) {
+    // Override old toast with real Cycle Count
+    btnFastAudit.addEventListener('click', (e) => {
+      e.stopImmediatePropagation();
+      openCycleCountModal();
+    }, true);
+  }
+
+  const btnCloseCycleModal = document.getElementById('btn-close-cycle-modal');
+  if (btnCloseCycleModal) btnCloseCycleModal.addEventListener('click', closeCycleCountModal);
+
+  const btnFinishCycle = document.getElementById('btn-finish-cycle-count');
+  if (btnFinishCycle) {
+    btnFinishCycle.addEventListener('click', () => {
+      showToast('ตรวจนับเสร็จสิ้น บันทึก ' + cycleCountScannedIds.size + ' รายการเข้าสโตร์');
+      closeCycleCountModal();
+      loadData();
+    });
+  }
+
+  const btnCycleManualSubmit = document.getElementById('btn-cycle-manual-submit');
+  const cycleManualInput = document.getElementById('cycle-manual-input');
+  if (btnCycleManualSubmit && cycleManualInput) {
+    btnCycleManualSubmit.addEventListener('click', () => {
+      const val = cycleManualInput.value.trim();
+      if (val) {
+        recordCycleAsset(val);
+        cycleManualInput.value = '';
+        cycleManualInput.focus();
+      }
+    });
+    cycleManualInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        const val = cycleManualInput.value.trim();
+        if (val) {
+          recordCycleAsset(val);
+          cycleManualInput.value = '';
+        }
+      }
     });
   }
