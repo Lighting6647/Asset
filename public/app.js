@@ -718,6 +718,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // --- Dedicated Store Racks & Borrowing Summary Widget ---
   window.renderStoreRackSummary = function() {
+  const btnQuickToStore = document.getElementById('btn-quick-to-store');
+  if (btnQuickToStore && !btnQuickToStore._hasBound) {
+    btnQuickToStore._hasBound = true;
+    btnQuickToStore.addEventListener('click', () => {
+      const btn = document.getElementById('sb-assets-registered');
+      if (btn) btn.click();
+    });
+  }
+
     const rackContainer = document.getElementById('store-rack-summary-container');
     if (!rackContainer) return;
 
@@ -748,7 +757,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const rackPills = topRacks.map(([rackName, count]) => {
       const pct = Math.round((count / maxCount) * 100);
       return `
-        <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 6px 10px; display: flex; flex-direction: column; gap: 4px;">
+        <div class="store-rack-clickable-pill" data-rack="${escapeHtml(rackName)}" style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 6px 10px; display: flex; flex-direction: column; gap: 4px; cursor: pointer; transition: transform 0.15s, border-color 0.15s;" onmouseover="this.style.borderColor='rgba(96,165,250,0.5)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.08)'">
           <div style="display: flex; justify-content: space-between; font-size: 0.78rem;">
             <strong style="color: #60a5fa; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px;">${escapeHtml(rackName)}</strong>
             <span style="color: ${count > 0 ? '#cbd5e1' : '#64748b'}; font-weight: 600;">${count > 0 ? count + ' ชิ้น' : 'ว่าง'}</span>
@@ -793,6 +802,14 @@ document.addEventListener('DOMContentLoaded', () => {
         </button>
       </div>
     `;
+
+    
+    rackContainer.querySelectorAll('.store-rack-clickable-pill').forEach(pill => {
+      pill.addEventListener('click', () => {
+        const sb = document.getElementById('sb-assets-registered');
+        if (sb) sb.click();
+      });
+    });
 
     const wb = document.getElementById('widget-btn-quick-borrow');
     if (wb) wb.onclick = () => window.openQuickStoreModal('borrow');
@@ -3292,7 +3309,7 @@ document.addEventListener('DOMContentLoaded', () => {
       `).join('');
 
       const onSelectChange = () => {
-        const chosen = candidateAssets.find(a => a.id === assetSelect.value);
+        const chosen = candidateAssets.find(a => a.id === assetSelect.value) || candidateAssets[0];
         if (chosen) {
           currentStoreAssetId = chosen.id;
           nameEl.textContent = chosen.name || '-';
@@ -3302,6 +3319,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       };
       assetSelect.onchange = onSelectChange;
+      if (candidateAssets.length > 0) {
+        currentStoreAssetId = candidateAssets[0].id;
+        assetSelect.value = candidateAssets[0].id;
+      }
       onSelectChange();
     }
 
@@ -3489,7 +3510,7 @@ document.addEventListener('DOMContentLoaded', () => {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            assetId: currentStoreAssetId,
+            assetId: currentStoreAssetId || document.getElementById('store-modal-asset-select')?.value,
             borrower,
             dueDate,
             note
@@ -3525,7 +3546,7 @@ document.addEventListener('DOMContentLoaded', () => {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            assetId: currentStoreAssetId,
+            assetId: currentStoreAssetId || document.getElementById('store-modal-asset-select')?.value,
             conditionNote
           })
         });

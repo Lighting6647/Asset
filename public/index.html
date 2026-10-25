@@ -776,6 +776,13 @@
                 <strong>รายการทรัพย์สิน</strong>
                 <span>กดรายการเพื่อดู Card</span>
               </div>
+              <!-- Store Filter Tabs (All / In Store / Borrowed / Overdue) -->
+              <div style="display: flex; gap: 0.4rem; margin: 0.6rem 0; flex-wrap: wrap;">
+                <button type="button" class="store-filter-tab" data-filter="all" style="padding: 0.35rem 0.65rem; border-radius: 8px; font-size: 0.78rem; border: 1px solid rgba(255,255,255,0.15); background: #2563eb; color: #fff; cursor: pointer; font-weight: 500;">ทั้งหมด</button>
+                <button type="button" class="store-filter-tab" data-filter="available" style="padding: 0.35rem 0.65rem; border-radius: 8px; font-size: 0.78rem; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.06); color: #cbd5e1; cursor: pointer; font-weight: 500;">🟢 ในคลัง</button>
+                <button type="button" class="store-filter-tab" data-filter="borrowed" style="padding: 0.35rem 0.65rem; border-radius: 8px; font-size: 0.78rem; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.06); color: #cbd5e1; cursor: pointer; font-weight: 500;">🟡 กำลังยืม</button>
+                <button type="button" class="store-filter-tab" data-filter="overdue" style="padding: 0.35rem 0.65rem; border-radius: 8px; font-size: 0.78rem; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.06); color: #cbd5e1; cursor: pointer; font-weight: 500;">🔴 ค้างส่ง</button>
+              </div>
               <div id="assets-detail-list" class="asset-detail-list"></div>
             </div>
             <div id="asset-selected-card" class="asset-selected-card">
