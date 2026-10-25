@@ -3,16 +3,18 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnExportExcel = document.getElementById('cc-btn-export-excel');
   if (btnExportExcel) {
     btnExportExcel.addEventListener('click', () => {
-      showToast('📊 กำลังเตรียมข้อมูลเพื่อส่งออกเป็น Excel...', 'info');
-      setTimeout(() => showToast('✅ ดาวน์โหลดข้อมูลสำเร็จ (Demo)', 'success'), 1500);
+      if (typeof window.exportStoreInventoryToExcel === 'function') {
+        window.exportStoreInventoryToExcel();
+      }
     });
   }
-
 
   const btnFastAudit = document.getElementById('cc-btn-fast-audit');
   if (btnFastAudit) {
     btnFastAudit.addEventListener('click', () => {
-      showToast('⚡ โหมดตรวจนับด่วน (Fast Audit Mode) จะเปิดให้ใช้งานในเวอร์ชันถัดไป!', 'info');
+      if (typeof window.openCycleCountModal === 'function') {
+        window.openCycleCountModal();
+      }
     });
   }
 
@@ -713,6 +715,91 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+
+  // --- Dedicated Store Racks & Borrowing Summary Widget ---
+  window.renderStoreRackSummary = function() {
+    const rackContainer = document.getElementById('store-rack-summary-container');
+    if (!rackContainer) return;
+
+    const safeAssets = assets || [];
+    const totalAssets = safeAssets.length;
+    const inStore = safeAssets.filter(a => !a.status || a.status === 'available').length;
+    const borrowed = safeAssets.filter(a => a.status === 'borrowed').length;
+    const today = new Date().toISOString().split('T')[0];
+    const overdue = safeAssets.filter(a => a.status === 'borrowed' && a.dueDate && a.dueDate < today).length;
+
+    // Group by Shelf / Rack
+    const rackMap = new Map();
+    safeAssets.forEach(a => {
+      const rack = (a.shelfLocation || a.location || 'คลังกลาง / ทั่วไป').trim();
+      rackMap.set(rack, (rackMap.get(rack) || 0) + 1);
+    });
+
+    if (rackMap.size === 0) {
+      rackMap.set('ชั้น A-01 (เครื่องมือช่าง)', 0);
+      rackMap.set('ชั้น B-02 (อุปกรณ์ไอที)', 0);
+      rackMap.set('ชั้น C-01 (สายไฟ/ท่อ)', 0);
+      rackMap.set('ตู้ D (เครื่องมือวัด)', 0);
+    }
+
+    const topRacks = Array.from(rackMap.entries()).sort((a, b) => b[1] - a[1]).slice(0, 4);
+    const maxCount = Math.max(...topRacks.map(r => r[1]), 1);
+
+    const rackPills = topRacks.map(([rackName, count]) => {
+      const pct = Math.round((count / maxCount) * 100);
+      return `
+        <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 6px 10px; display: flex; flex-direction: column; gap: 4px;">
+          <div style="display: flex; justify-content: space-between; font-size: 0.78rem;">
+            <strong style="color: #60a5fa; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px;">${escapeHtml(rackName)}</strong>
+            <span style="color: ${count > 0 ? '#cbd5e1' : '#64748b'}; font-weight: 600;">${count > 0 ? count + ' ชิ้น' : 'ว่าง'}</span>
+          </div>
+          <div style="height: 4px; border-radius: 999px; background: rgba(255,255,255,0.1); overflow: hidden;">
+            <div style="width: ${count > 0 ? pct : 0}%; height: 100%; background: linear-gradient(90deg, #3b82f6, #60a5fa); border-radius: 999px;"></div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    rackContainer.innerHTML = `
+      <!-- Quick Ratios -->
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; text-align: center; margin-bottom: 0.35rem;">
+        <div style="background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.3); border-radius: 8px; padding: 6px 4px;">
+          <span style="font-size: 0.7rem; color: #34d399; display: block;">🟢 ในคลัง</span>
+          <strong style="font-size: 1.15rem; color: #34d399;">${inStore}</strong>
+        </div>
+        <div style="background: rgba(245,158,11,0.12); border: 1px solid rgba(245,158,11,0.3); border-radius: 8px; padding: 6px 4px;">
+          <span style="font-size: 0.7rem; color: #fbbf24; display: block;">🟡 ถูกยืม</span>
+          <strong style="font-size: 1.15rem; color: #fbbf24;">${borrowed}</strong>
+        </div>
+        <div style="background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.3); border-radius: 8px; padding: 6px 4px;">
+          <span style="font-size: 0.7rem; color: #f87171; display: block;">🔴 ค้างส่ง</span>
+          <strong style="font-size: 1.15rem; color: #f87171;">${overdue}</strong>
+        </div>
+      </div>
+
+      <!-- Shelf Breakdown Heading -->
+      <div style="font-size: 0.75rem; color: #94a3b8; font-weight: 500; margin-top: 2px;">กระจายตามชั้นวาง (Top Shelves & Racks):</div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.45rem;">
+        ${rackPills}
+      </div>
+
+      <!-- Quick Actions in Widget -->
+      <div style="display: flex; gap: 0.5rem; margin-top: 0.35rem;">
+        <button id="widget-btn-quick-borrow" type="button" class="btn btn-primary" style="flex: 1; padding: 0.35rem 0.5rem; font-size: 0.75rem; background: #2563eb;">
+          📦 เบิกยืมด่วน
+        </button>
+        <button id="widget-btn-quick-return" type="button" class="btn btn-secondary" style="flex: 1; padding: 0.35rem 0.5rem; font-size: 0.75rem; color: #34d399; border-color: rgba(16,185,129,0.4);">
+          📥 รับคืนด่วน
+        </button>
+      </div>
+    `;
+
+    const wb = document.getElementById('widget-btn-quick-borrow');
+    if (wb) wb.onclick = () => window.openQuickStoreModal('borrow');
+    const wr = document.getElementById('widget-btn-quick-return');
+    if (wr) wr.onclick = () => window.openQuickStoreModal('return');
+  };
+
   // --- Admin Dashboard Logic ---
   function updateAdminDashboard() {
     // Stat Counters
@@ -785,29 +872,35 @@ document.addEventListener('DOMContentLoaded', () => {
       return 5000; 
     }
 
-    // High-Level Organizational Metrics for Top 5 Cards
-    const totalAssetsCount = assets.length;
+    // Store & Tools Operational Metrics
+    const todayStr = new Date().toISOString().split('T')[0];
+    const safeAssets = assets || [];
+    const inStoreCount = safeAssets.filter(a => !a.status || a.status === 'available').length;
+    const borrowedCount = safeAssets.filter(a => a.status === 'borrowed').length;
+    const overdueCount = safeAssets.filter(a => a.status === 'borrowed' && a.dueDate && a.dueDate < todayStr).length;
+    const maintenanceCount = safeAssets.filter(a => a.status === 'maintenance').length;
+
     let totalValue = 0;
     const uniqueCategories = new Set();
     const uniqueLocations = new Set();
 
-    filteredAssets.forEach(a => {
+    safeAssets.forEach(a => {
       let val = parseFloat(a.price);
       if (isNaN(val) || val === 0) {
         val = estimateMarketValue(a.name);
       }
       totalValue += val;
       if (a.category) uniqueCategories.add(a.category);
-      if (a.location) uniqueLocations.add(a.location);
-    });
-    
-    devices.forEach(d => {
-      let val = estimateMarketValue(d.name || d.userName);
-      totalValue += val;
-      if (d.type) uniqueCategories.add(d.type);
-      if (d.position) uniqueLocations.add(d.position);
+      if (a.shelfLocation) uniqueLocations.add(a.shelfLocation);
+      else if (a.location) uniqueLocations.add(a.location);
     });
 
+    if (uniqueCategories.size === 0) {
+      ['เครื่องมือช่าง', 'อุปกรณ์ไอที', 'เครื่องมือวัด/ทดสอบ', 'อุปกรณ์ความปลอดภัย'].forEach(c => uniqueCategories.add(c));
+    }
+    if (uniqueLocations.size === 0) {
+      ['ชั้น A-01', 'ชั้น B-02', 'ตู้ C-01'].forEach(l => uniqueLocations.add(l));
+    }
 
     const elStatTopDevices = document.getElementById('stat-top-devices');
     const elStatTopAssets = document.getElementById('stat-top-assets');
@@ -815,97 +908,43 @@ document.addEventListener('DOMContentLoaded', () => {
     const elStatTopCategories = document.getElementById('stat-top-categories');
     const elStatTopLocations = document.getElementById('stat-top-locations');
 
-    if (elStatTopDevices) elStatTopDevices.textContent = total.toLocaleString();
-    if (elStatTopAssets) elStatTopAssets.textContent = totalAssetsCount.toLocaleString();
+    if (elStatTopDevices) elStatTopDevices.textContent = inStoreCount.toLocaleString();
+    if (elStatTopAssets) elStatTopAssets.textContent = borrowedCount.toLocaleString();
     if (elStatTopValue) elStatTopValue.textContent = '฿' + totalValue.toLocaleString();
     if (elStatTopCategories) elStatTopCategories.textContent = uniqueCategories.size.toLocaleString();
     if (elStatTopLocations) elStatTopLocations.textContent = uniqueLocations.size.toLocaleString();
 
+    // Module Count Badges
+    const elModAssets = document.getElementById('cc-data-assets');
+    const elModAlerts = document.getElementById('cc-data-alerts');
+    const elModLogs = document.getElementById('cc-data-logs');
+    if (elModAssets) elModAssets.textContent = safeAssets.length + ' รายการ';
+    if (elModAlerts) elModAlerts.textContent = overdueCount > 0 ? overdueCount + ' ค้างส่ง' : 'ปกติ (0)';
+    if (elModLogs) elModLogs.textContent = (logs ? logs.length : 0) + ' รายการ';
+
+    // Render Store Rack Summary Widget
+    renderStoreRackSummary();
+
 
     
-    // Store Racks & Borrowing Summary Widget
-    const rackContainer = document.getElementById('store-rack-summary-container');
-    if (rackContainer) {
-      const btnQuickToStore = document.getElementById('btn-quick-to-store');
-      if (btnQuickToStore && !btnQuickToStore._hasBound) {
-        btnQuickToStore._hasBound = true;
-        btnQuickToStore.addEventListener('click', () => {
-          const btn = document.getElementById('cc-btn-assets-reg') || document.getElementById('sb-assets-registered');
-          if (btn) btn.click();
-        });
-      }
-
-      const totalAssets = assets ? assets.length : 0;
-      const inStore = assets ? assets.filter(a => !a.status || a.status === 'available').length : 0;
-      const borrowed = assets ? assets.filter(a => a.status === 'borrowed').length : 0;
-      const today = new Date().toISOString().split('T')[0];
-      const overdue = assets ? assets.filter(a => a.status === 'borrowed' && a.dueDate && a.dueDate < today).length : 0;
-
-      // Group by Shelf / Rack
-      const rackMap = new Map();
-      (assets || []).forEach(a => {
-        const rack = (a.shelfLocation || a.location || 'คลังกลาง / ทั่วไป').trim();
-        rackMap.set(rack, (rackMap.get(rack) || 0) + 1);
-      });
-      const topRacks = Array.from(rackMap.entries()).sort((a, b) => b[1] - a[1]).slice(0, 4);
-
-      const rackPills = topRacks.length
-        ? topRacks.map(([rackName, count]) => {
-            const pct = totalAssets > 0 ? Math.round((count / totalAssets) * 100) : 0;
-            return `
-              <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 6px 10px; display: flex; flex-direction: column; gap: 4px;">
-                <div style="display: flex; justify-content: space-between; font-size: 0.78rem;">
-                  <strong style="color: #60a5fa; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px;">${escapeHtml(rackName)}</strong>
-                  <span style="color: #cbd5e1; font-weight: 600;">${count} ชิ้น</span>
-                </div>
-                <div style="height: 4px; border-radius: 999px; background: rgba(255,255,255,0.1); overflow: hidden;">
-                  <div style="width: ${pct}%; height: 100%; background: linear-gradient(90deg, #3b82f6, #60a5fa); border-radius: 999px;"></div>
-                </div>
-              </div>
-            `;
-          }).join('')
-        : '<div style="color: #64748b; font-size: 0.8rem; text-align: center; padding: 10px;">ยังไม่มีข้อมูลชั้นวางในระบบ</div>';
-
-      rackContainer.innerHTML = `
-        <!-- Quick Ratios -->
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; text-align: center; margin-bottom: 0.35rem;">
-          <div style="background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.3); border-radius: 8px; padding: 6px 4px;">
-            <span style="font-size: 0.7rem; color: #34d399; display: block;">🟢 ในคลัง</span>
-            <strong style="font-size: 1.15rem; color: #34d399;">${inStore}</strong>
-          </div>
-          <div style="background: rgba(245,158,11,0.12); border: 1px solid rgba(245,158,11,0.3); border-radius: 8px; padding: 6px 4px;">
-            <span style="font-size: 0.7rem; color: #fbbf24; display: block;">🟡 ถูกยืม</span>
-            <strong style="font-size: 1.15rem; color: #fbbf24;">${borrowed}</strong>
-          </div>
-          <div style="background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.3); border-radius: 8px; padding: 6px 4px;">
-            <span style="font-size: 0.7rem; color: #f87171; display: block;">🔴 ค้างส่ง</span>
-            <strong style="font-size: 1.15rem; color: #f87171;">${overdue}</strong>
-          </div>
-        </div>
-
-        <!-- Shelf Breakdown Heading -->
-        <div style="font-size: 0.75rem; color: #94a3b8; font-weight: 500; margin-top: 2px;">กระจายตามชั้นวาง (Top Racks / Shelves):</div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.45rem;">
-          ${rackPills}
-        </div>
-      `;
-    }
+    // renderStoreRackSummary called above
 
     const dashboardSignature = JSON.stringify(devices.map(device => [device.id, device.status, device.userName || device.name, device.position]));
     if (dashboardSignature !== renderedDeviceDashboardSignature) {
       renderedDeviceDashboardSignature = dashboardSignature;
-      const healthPercent = total ? Math.round((active / total) * 100) : 0;
-      deviceHealthPercent.textContent = `${healthPercent}% Active`;
-      const statusRows = [
-        ['Active', active, 'success'],
-        ['Pending', pending, 'warning'],
-        ['Unverified', unverified, 'muted'],
-        ['Overdue', overdue, 'danger']
+      const totalStoreItems = safeAssets.length || 1;
+      const readyPercent = Math.round((inStoreCount / totalStoreItems) * 100);
+      deviceHealthPercent.textContent = `${readyPercent}% พร้อมใช้`;
+      const storeStatusRows = [
+        ['พร้อมใช้งาน (In Store)', inStoreCount, 'success'],
+        ['กำลังเบิกยืม (Borrowed)', borrowedCount, 'warning'],
+        ['ค้างส่ง (Overdue)', overdueCount, 'danger'],
+        ['ส่งซ่อม (Maintenance)', maintenanceCount, 'muted']
       ];
-      deviceStatusBars.innerHTML = statusRows.map(([label, count, tone]) => `
-        <button type="button" class="device-status-row" data-status="${label.toLowerCase()}" aria-label="เปิดรายการอุปกรณ์สถานะ ${label} จำนวน ${count} รายการ">
-          <span>${label}</span><div><i class="${tone}" style="width:${total ? Math.round((count / total) * 100) : 0}%"></i></div><strong>${count}</strong>
-        </button>
+      deviceStatusBars.innerHTML = storeStatusRows.map(([label, count, tone]) => `
+        <div class="device-status-row" style="cursor: default;">
+          <span>${label}</span><div><i class="${tone}" style="width:${Math.round((count / totalStoreItems) * 100)}%"></i></div><strong>${count}</strong>
+        </div>
       `).join('');
 
       const workItems = [
@@ -1184,22 +1223,45 @@ document.addEventListener('DOMContentLoaded', () => {
       renderedAssetsSignature = assetsSignature;
       assetsDetailList.innerHTML = '';
 
-      if (filteredAssets.length === 0) {
+      const curFilter = window.storeSelectedFilter || 'all';
+      const curToday = new Date().toISOString().split('T')[0];
+      const displayAssets = (assets || []).filter(a => {
+        if (curFilter === 'available') return !a.status || a.status === 'available';
+        if (curFilter === 'borrowed') return a.status === 'borrowed';
+        if (curFilter === 'overdue') return a.status === 'borrowed' && a.dueDate && a.dueDate < curToday;
+        return true;
+      });
+
+      if (displayAssets.length === 0) {
         selectedAssetId = null;
         emptyAssetsMsg.classList.remove('hidden');
-        assetSelectedCard.innerHTML = '<div class="asset-card-placeholder">ยังไม่มีข้อมูลทรัพย์สิน</div>';
+        assetSelectedCard.innerHTML = '<div class="asset-card-placeholder">ไม่พบรายการพัสดุในหมวดนี้</div>';
         assetSelectedCard.classList.remove('has-card');
       } else {
         emptyAssetsMsg.classList.add('hidden');
-        assets.forEach(a => {
+        displayAssets.forEach(a => {
         const item = document.createElement('button');
         item.type = 'button';
         item.className = 'asset-detail-list-item';
+        
+        let statusBadgeHtml = '<span style="color: #34d399; font-size: 0.75rem;">🟢 ในคลัง</span>';
+        if (a.status === 'borrowed') {
+          const isOverdue = a.dueDate && a.dueDate < curToday;
+          statusBadgeHtml = isOverdue
+            ? '<span style="color: #f87171; font-size: 0.75rem;">🔴 ค้างส่ง (' + escapeHtml(a.borrower || 'ช่าง') + ')</span>'
+            : '<span style="color: #fbbf24; font-size: 0.75rem;">🟡 ยืมโดย ' + escapeHtml(a.borrower || 'ช่าง') + '</span>';
+        } else if (a.status === 'maintenance') {
+          statusBadgeHtml = '<span style="color: #94a3b8; font-size: 0.75rem;">⚙️ ส่งซ่อม</span>';
+        }
+
         item.innerHTML = `
           <span class="asset-detail-list-copy">
-            <strong>${escapeHtml(a.name || 'ไม่ระบุชื่อ')}</strong>
-            <small>${escapeHtml(a.category || 'ไม่ระบุหมวดหมู่')}</small>
-            <small>S/N: ${escapeHtml(a.sn || a.serialNumber || '-')} · ${escapeHtml(a.location || '-')}</small>
+            <strong style="display: flex; justify-content: space-between; align-items: center;">
+              <span>${escapeHtml(a.name || 'ไม่ระบุชื่อ')}</span>
+              ${statusBadgeHtml}
+            </strong>
+            <small>${escapeHtml(a.category || 'เครื่องมือ')} · ชั้น: ${escapeHtml(a.shelfLocation || a.location || 'คลังกลาง')}</small>
+            <small>S/N: ${escapeHtml(a.sn || a.serialNumber || '-')}</small>
           </span>
           <span class="asset-detail-list-arrow" aria-hidden="true">›</span>
         `;
@@ -1318,12 +1380,30 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
         <div class="asset-card-details">
           <div><span>หมายเลข S/N</span><strong>${escapeHtml(asset.sn || asset.serialNumber || '-')}</strong></div>
-          <div><span>สถานที่ตั้ง</span><strong>${escapeHtml(asset.location || '-')}</strong></div>
-          <div><span>วันที่บันทึก</span><strong>${asset.registeredAt ? new Date(asset.registeredAt).toLocaleString('th-TH') : '-'}</strong></div>
+          <div><span>พิกัดชั้นวาง (Shelf / Rack)</span><strong style="color: #60a5fa;">${escapeHtml(asset.shelfLocation || asset.location || 'คลังกลาง')}</strong></div>
+          <div><span>สถานะพัสดุ</span><strong style="color: ${asset.status === 'borrowed' ? '#fbbf24' : '#34d399'};">
+            ${asset.status === 'borrowed' ? '🟡 ถูกยืมโดย: ' + escapeHtml(asset.borrower || 'ไม่ระบุ') + (asset.dueDate ? ' (คืน: ' + escapeHtml(asset.dueDate) + ')' : '') : '🟢 พร้อมใช้งานในสโตร์'}
+          </strong></div>
           <div><span>ตรวจสอบล่าสุด</span><strong class="status-cell">
             <span class="status-indicator ${asset.lastScannedAt ? 'active' : 'unverified'}"></span>
             ${lastScannedFormatted}
           </strong></div>
+        </div>
+        
+        <!-- Store Operational Quick Actions -->
+        <div style="display: flex; gap: 0.5rem; margin-top: 1rem; padding: 0 1rem 1rem 1rem; flex-wrap: wrap;">
+          ${asset.status === 'borrowed' ? `
+            <button type="button" class="btn btn-primary" onclick="window.openStoreModal('${asset.id}', 'return')" style="flex: 1; padding: 0.55rem; background: #10b981; font-size: 0.85rem; border-radius: 8px; font-weight: 600;">
+              📥 รับคืนเข้าสโตร์ (Check In)
+            </button>
+          ` : `
+            <button type="button" class="btn btn-primary" onclick="window.openStoreModal('${asset.id}', 'borrow')" style="flex: 1; padding: 0.55rem; background: #2563eb; font-size: 0.85rem; border-radius: 8px; font-weight: 600;">
+              📦 เบิกยืมอุปกรณ์นี้ (Check Out)
+            </button>
+          `}
+          <button type="button" class="btn btn-secondary" onclick="window.printAssetShelfLabel('${asset.id}')" style="padding: 0.55rem 0.85rem; font-size: 0.85rem; border-radius: 8px; white-space: nowrap;">
+            🏷️ พิมพ์ป้ายบาร์โค้ด
+          </button>
         </div>
       </article>
     `;
@@ -3068,14 +3148,46 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  bind('cc-btn-devices-reg', 'sb-devices-registered');
+  // 10 Dedicated Store Tool Module Bindings
   bind('cc-btn-assets-reg', 'sb-assets-registered');
+  
+  const btnBorrowQuick = document.getElementById('cc-btn-borrow-quick');
+  if (btnBorrowQuick) btnBorrowQuick.addEventListener('click', () => window.openQuickStoreModal('borrow'));
+
+  const btnReturnQuick = document.getElementById('cc-btn-return-quick');
+  if (btnReturnQuick) btnReturnQuick.addEventListener('click', () => window.openQuickStoreModal('return'));
+
+  const btnFastAudit = document.getElementById('cc-btn-fast-audit');
+  if (btnFastAudit) btnFastAudit.addEventListener('click', () => window.openCycleCountModal && window.openCycleCountModal());
+
   bind('cc-btn-scan', 'sb-scan-qr');
-  bind('cc-btn-alerts', 'sb-alert-center');
+
+  const btnRacks = document.getElementById('cc-btn-racks');
+  if (btnRacks) btnRacks.addEventListener('click', () => {
+    const sb = document.getElementById('sb-assets-registered');
+    if (sb) sb.click();
+  });
+
+  const btnAlerts = document.getElementById('cc-btn-alerts');
+  if (btnAlerts) {
+    btnAlerts.addEventListener('click', () => {
+      const page = document.getElementById('alert-center-page');
+      if (page) {
+        document.getElementById('devices-section-content')?.classList.add('hidden');
+        document.getElementById('assets-section-content')?.classList.add('hidden');
+        document.querySelectorAll('.operations-page').forEach(p => p.classList.add('hidden'));
+        page.classList.remove('hidden');
+        page.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        const backBtnContainer = document.getElementById('gsap-back-btn-container');
+        if (backBtnContainer) backBtnContainer.classList.remove('hidden');
+      }
+    });
+  }
   bind('cc-btn-logs', 'sb-activity-log');
-  bind('cc-btn-ass-analytics', 'sb-asset-analytics');
-  bind('cc-btn-reports-dev', 'sb-export-devices-pdf');
-  bind('cc-btn-reports-ass', 'sb-export-assets-pdf');
+
+  const btnExcel = document.getElementById('cc-btn-export-excel');
+  if (btnExcel) btnExcel.addEventListener('click', () => window.exportStoreInventoryToExcel());
+
   bind('cc-btn-settings', 'sb-settings');
 });
 
@@ -3127,6 +3239,187 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- Store Borrow & Return Modal Handlers ---
   let currentStoreAssetId = null;
 
+
+  // --- Quick Store Modal Handler (Borrow / Return from Command Center) ---
+  window.openQuickStoreModal = function(mode) {
+    const modal = document.getElementById('store-action-modal');
+    if (!modal) return;
+    const titleEl = document.getElementById('store-modal-title');
+    const nameEl = document.getElementById('store-modal-asset-name');
+    const shelfEl = document.getElementById('store-modal-asset-shelf');
+    const selectWrapper = document.getElementById('store-modal-select-wrapper');
+    const assetSelect = document.getElementById('store-modal-asset-select');
+    const borrowSec = document.getElementById('store-borrow-section');
+    const returnSec = document.getElementById('store-return-section');
+
+    const safeAssets = assets || [];
+    let candidateAssets = [];
+
+    if (mode === 'borrow') {
+      candidateAssets = safeAssets.filter(a => !a.status || a.status === 'available');
+      if (candidateAssets.length === 0) {
+        showToast('ขณะนี้ไม่มีพัสดุสถานะพร้อมใช้งานในคลังสโตร์ (อาจถูกยืมหมดแล้ว)', 'warning');
+        return;
+      }
+      titleEl.innerHTML = '📦 เบิกยืมพัสดุสโตร์ (Check Out)';
+      borrowSec.classList.remove('hidden');
+      returnSec.classList.add('hidden');
+      const nameInput = document.getElementById('borrow-person-name');
+      if (nameInput) {
+        nameInput.value = '';
+        setTimeout(() => nameInput.focus(), 100);
+      }
+      if (document.getElementById('borrow-due-date')) {
+        const defaultDue = new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0];
+        document.getElementById('borrow-due-date').value = defaultDue;
+      }
+      if (document.getElementById('borrow-note')) document.getElementById('borrow-note').value = '';
+    } else {
+      candidateAssets = safeAssets.filter(a => a.status === 'borrowed');
+      if (candidateAssets.length === 0) {
+        showToast('ขณะนี้ไม่มีรายการที่ถูกเบิกยืมในระบบ ทุกชิ้นอยู่ในสโตร์เรียบร้อย', 'info');
+        return;
+      }
+      titleEl.innerHTML = '📥 รับคืนพัสดุเข้าสโตร์ (Check In)';
+      borrowSec.classList.add('hidden');
+      returnSec.classList.remove('hidden');
+    }
+
+    if (selectWrapper && assetSelect) {
+      selectWrapper.classList.remove('hidden');
+      assetSelect.innerHTML = candidateAssets.map(a => `
+        <option value="${a.id}">${escapeHtml(a.name || 'พัสดุ')} [ชั้น: ${escapeHtml(a.shelfLocation || a.location || 'คลังกลาง')}]${a.borrower ? ' - ผู้ยืม: ' + escapeHtml(a.borrower) : ''}</option>
+      `).join('');
+
+      const onSelectChange = () => {
+        const chosen = candidateAssets.find(a => a.id === assetSelect.value);
+        if (chosen) {
+          currentStoreAssetId = chosen.id;
+          nameEl.textContent = chosen.name || '-';
+          shelfEl.textContent = 'พิกัดชั้นวาง: ' + (chosen.shelfLocation || chosen.location || 'คลังกลาง');
+          const retNameEl = document.getElementById('return-borrower-name');
+          if (retNameEl) retNameEl.textContent = chosen.borrower || 'ไม่ระบุ';
+        }
+      };
+      assetSelect.onchange = onSelectChange;
+      onSelectChange();
+    }
+
+    modal.classList.remove('hidden');
+  };
+
+  // --- Real Export Store Inventory to Excel (CSV with UTF-8 BOM) ---
+  window.exportStoreInventoryToExcel = function() {
+    const safeAssets = assets || [];
+    if (safeAssets.length === 0) {
+      showToast('ไม่มีรายการพัสดุในระบบสำหรับส่งออก', 'info');
+      return;
+    }
+    showToast('📊 กำลังจัดเตรียมข้อมูลพัสดุและเครื่องมือ...', 'info');
+
+    const headers = [
+      'รหัสพัสดุ (Asset ID)',
+      'ชื่อพัสดุ/เครื่องมือ (Name)',
+      'หมวดหมู่ (Category)',
+      'หมายเลขซีเรียล (S/N)',
+      'พิกัดชั้นวาง (Shelf / Rack)',
+      'สถานที่จัดเก็บ (Location)',
+      'สถานะ (Status)',
+      'ผู้เบิกยืม (Borrower)',
+      'วันที่ต้องคืน (Due Date)',
+      'วันที่ลงทะเบียน (Registered At)',
+      'ตรวจสอบล่าสุด (Last Scanned)'
+    ];
+
+    const rows = safeAssets.map(a => {
+      let statusTh = 'ในคลัง (พร้อมใช้)';
+      if (a.status === 'borrowed') statusTh = 'ถูกเบิกยืม';
+      else if (a.status === 'maintenance') statusTh = 'ส่งซ่อม/ชำรุด';
+
+      return [
+        `"${(a.id || '').replace(/"/g, '""')}"`,
+        `"${(a.name || '').replace(/"/g, '""')}"`,
+        `"${(a.category || '').replace(/"/g, '""')}"`,
+        `"${(a.sn || a.serialNumber || '').replace(/"/g, '""')}"`,
+        `"${(a.shelfLocation || '').replace(/"/g, '""')}"`,
+        `"${(a.location || '').replace(/"/g, '""')}"`,
+        `"${statusTh}"`,
+        `"${(a.borrower || '').replace(/"/g, '""')}"`,
+        `"${(a.dueDate || '').replace(/"/g, '""')}"`,
+        `"${a.registeredAt ? new Date(a.registeredAt).toLocaleDateString('th-TH') : ''}"`,
+        `"${a.lastScannedAt ? new Date(a.lastScannedAt).toLocaleDateString('th-TH') : ''}"`
+      ].join(',');
+    });
+
+    const csvContent = '\uFEFF' + [headers.join(','), ...rows].join('\r\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    const today = new Date().toISOString().split('T')[0];
+    link.href = url;
+    link.setAttribute('download', `Store_Inventory_Report_${today}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    showToast('✅ ดาวน์โหลดรายงาน Excel (CSV) สำเร็จเรียบร้อย');
+  };
+
+  // --- Print Shelf & Barcode Label ---
+  window.printAssetShelfLabel = function(assetId) {
+    const asset = (assets || []).find(a => a.id === assetId);
+    if (!asset) return;
+
+    const printWin = window.open('', '_blank', 'width=600,height=450');
+    if (!printWin) {
+      showToast('เบราว์เซอร์บล็อกป๊อปอัป กรุณาอนุญาตป๊อปอัป');
+      return;
+    }
+
+    const qrUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+      ? `http://${serverIpAddress}:3000/scanner.html?id=${asset.id}`
+      : `${window.location.origin}/scanner.html?id=${asset.id}`;
+
+    printWin.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>ป้ายชั้นวาง - ${asset.name}</title>
+        <style>
+          body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 24px; text-align: center; background: #fff; color: #000; }
+          .label-box { border: 2.5px solid #000; padding: 18px; border-radius: 12px; max-width: 360px; margin: 0 auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+          h2 { margin: 0 0 6px; font-size: 1.25rem; font-weight: 700; }
+          .rack { font-size: 1.15rem; font-weight: bold; color: #1d4ed8; margin: 6px 0; background: #eff6ff; padding: 6px; border-radius: 6px; }
+          .sn { font-size: 0.85rem; color: #475569; margin-bottom: 12px; }
+          .qr { margin: 12px auto; width: 140px; height: 140px; }
+          .footer { font-size: 0.78rem; color: #64748b; margin-top: 10px; border-top: 1px dashed #cbd5e1; padding-top: 8px; }
+        </style>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>
+      </head>
+      <body>
+        <div class="label-box">
+          <h2>${escapeHtml(asset.name || 'พัสดุ')}</h2>
+          <div class="rack">พิกัดชั้นวาง: ${escapeHtml(asset.shelfLocation || asset.location || 'คลังกลาง')}</div>
+          <div class="sn">S/N: ${escapeHtml(asset.sn || asset.serialNumber || '-')} | ID: ${escapeHtml(asset.id)}</div>
+          <div id="qrcode" class="qr"></div>
+          <div class="footer">สแกนเพื่อตรวจสอบข้อมูล หรือบันทึกเบิกยืม/รับคืน</div>
+        </div>
+        <script>
+          new QRCode(document.getElementById("qrcode"), {
+            text: "${qrUrl}",
+            width: 140,
+            height: 140,
+            correctLevel: QRCode.CorrectLevel.M
+          });
+          setTimeout(() => { window.print(); }, 500);
+        <\/script>
+      </body>
+      </html>
+    `);
+    printWin.document.close();
+  };
+
   window.openStoreModal = (assetId, mode) => {
     currentStoreAssetId = assetId;
     const asset = assets.find(a => a.id === assetId);
@@ -3136,11 +3429,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const titleEl = document.getElementById('store-modal-title');
     const nameEl = document.getElementById('store-modal-asset-name');
     const shelfEl = document.getElementById('store-modal-asset-shelf');
+    const selectWrapper = document.getElementById('store-modal-select-wrapper');
     const borrowSec = document.getElementById('store-borrow-section');
     const returnSec = document.getElementById('store-return-section');
 
+    if (selectWrapper) selectWrapper.classList.add('hidden');
     nameEl.textContent = asset.name || '-';
-    shelfEl.textContent = 'พิกัดชั้นวาง: ' + (asset.shelfLocation || 'ไม่ระบุ');
+    shelfEl.textContent = 'พิกัดชั้นวาง: ' + (asset.shelfLocation || asset.location || 'ไม่ระบุ');
 
     if (mode === 'borrow') {
       titleEl.innerHTML = '📦 เบิกยืมอุปกรณ์สโตร์ (Check Out)';
@@ -3151,7 +3446,10 @@ document.addEventListener('DOMContentLoaded', () => {
         nameInput.value = '';
         setTimeout(() => nameInput.focus(), 100);
       }
-      if (document.getElementById('borrow-due-date')) document.getElementById('borrow-due-date').value = '';
+      if (document.getElementById('borrow-due-date')) {
+        const defaultDue = new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0];
+        document.getElementById('borrow-due-date').value = defaultDue;
+      }
       if (document.getElementById('borrow-note')) document.getElementById('borrow-note').value = '';
     } else {
       titleEl.innerHTML = '📥 รับคืนอุปกรณ์เข้าคลังสโตร์ (Check In)';
@@ -3497,6 +3795,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
   }
+  window.openCycleCountModal = openCycleCountModal;
 
   function closeCycleCountModal() {
     const modal = document.getElementById('cycle-count-modal');
