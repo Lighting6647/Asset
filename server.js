@@ -6,7 +6,7 @@ const https = require('https');
 
 const PORT = Number(process.env.PORT) || 3000;
 const PUBLIC_DIR = path.join(__dirname, 'public');
-const DB_FILE = path.join(__dirname, 'data', 'db.json');
+const DB_FILE = process.env.VERCEL ? path.join(os.tmpdir(), 'db.json') : path.join(__dirname, 'data', 'db.json');
 const ACTION_PASSWORD = process.env.ACTION_PASSWORD || '664749';
 const DASHBOARD_SYNC_TOKEN = process.env.IOS_DASHBOARD_SYNC_TOKEN || '';
 const { createLarkReminders } = require('./lark-reminders');
@@ -305,44 +305,36 @@ const mimeTypes = {
   '.ico': 'image/x-icon'
 };
 
-const server = http.createServer(async (req, res) => {
-  await ensureDbReady();
-  // Decode request bodies as a continuous UTF-8 stream so Thai characters
-  // are never corrupted when a multi-byte character spans network chunks.
-  req.setEncoding('utf8');
-  // Strip query string for robust routing and file serving
-  const qPos = req.url.indexOf('?');
-  const pathname = qPos !== -1 ? req.url.substring(0, qPos) : req.url;
-
-  if (req.method === 'POST' && pathname === '/api/lark-reminders') {
+// Universal request body reader (supports both Vercel parsed body and raw Node streams)
+function readBody(req) {
+  return new Promise((resolve) => {
+    if (req.body !== undefined && req.body !== null) {
+      if (typeof req.body === 'object') return resolve(req.body);
+      try { return resolve(JSON.parse(req.body)); }
+      catch (_) { return resolve({}); }
+    }
+    if (req.setEncoding) req.setEncoding('utf8');
     let body = '';
-    req.on('data', chunk => { body += chunk; if (body.length > 150000) req.destroy(); });
-    req.on('end', async () => {
-      try {
-        const data = JSON.parse(body);
-        if (!requireActionPassword(data, res)) return;
-        let result;
-        if (data.action === 'save') { await larkReminders.saveRecipient(data); result = larkReminders.overview(); }
-        else if (data.action === 'test') result = await larkReminders.testConnection();
-        else if (data.action === 'send') result = await larkReminders.run({ scheduled: false });
-        else if (data.action === 'status') result = larkReminders.overview();
-        else if (data.action === 'summary') result = await larkReminders.sendSummary({ scheduled: false });
-        else if (data.action === 'recover') result = await larkReminders.recover(data);
-        else throw new Error('Unknown action');
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify(result));
-      } catch (error) {
-        res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: error.message }));
-      }
+    req.on('data', chunk => {
+      body += chunk;
+      if (body.length > 2000000) req.destroy();
     });
-    return;
-  }
+    req.on('end', () => {
+      try { resolve(JSON.parse(body || '{}')); }
+      catch (_) { resolve({}); }
+    });
+    req.on('error', () => resolve({}));
+  });
+}
+
+
+async function handleApiRequest(req, res) {
+  await ensureDbReady();
 
   // Enable CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Integration-Token, X-Master-Key');
 
   if (req.method === 'OPTIONS') {
     res.writeHead(204);
@@ -350,82 +342,101 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  // --- API Routes ---
+  // Determine path
+  let pathname = (req.url || '').split('?')[0];
+  if (req.headers['x-matched-path'] && req.headers['x-matched-path'].startsWith('/api')) {
+    pathname = req.headers['x-matched-path'].split('?')[0];
+  }
 
-  // POST /api/integration/device-assignment
-  // Server-to-server synchronization from IT Monthly Dashboard.
-  if (req.method === 'POST' && pathname === '/api/integration/device-assignment') {
-    if (!requireDashboardSyncToken(req, res)) return;
-    const chunks = [];
-    req.on('data', chunk => chunks.push(chunk));
-    req.on('end', () => {
-      try {
-        const data = JSON.parse(chunks.join(''));
-        const action = String(data.action || '');
-        const deviceNumber = String(data.deviceNumber || '').trim();
-        if (!['issue', 'return'].includes(action) || !deviceNumber) {
-          res.writeHead(400, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'action and deviceNumber are required.' }));
-          return;
-        }
-
-        const db = readDb();
-        const normalizedNumber = normalizeDeviceNumber(deviceNumber);
-        const matchedDevices = db.devices.filter(device => normalizeDeviceNumber(device.deviceNumber) === normalizedNumber);
-        if (matchedDevices.length === 0) {
-          res.writeHead(404, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'Device is not registered in iOS Device Monitor.', deviceNumber }));
-          return;
-        }
-
-        const userName = action === 'issue' ? String(data.userName || '').trim() : 'ส่วนกลาง';
-        const position = action === 'issue' ? String(data.position || '').trim() : 'คลัง IT';
-        if (action === 'issue' && !userName) {
-          res.writeHead(400, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'userName is required when issuing a device.' }));
-          return;
-        }
-
-        const syncedAt = new Date().toISOString();
-        matchedDevices.forEach(device => {
-          device.name = userName;
-          device.userName = userName;
-          device.position = position;
-          device.assignmentStatus = action === 'issue' ? 'issued' : 'returned';
-          device.assignmentSyncedAt = syncedAt;
-          if (action === 'return') device.lastVerifiedAt = '';
-          addLog(
-            db,
-            device.id,
-            userName,
-            action === 'issue'
-              ? `Assigned from IT Dashboard (${device.deviceNumber})`
-              : `Returned from IT Dashboard (${device.deviceNumber})`
-          );
-        });
-        await writeDb(db);
-
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({
-          success: true,
-          action,
-          deviceNumber,
-          matchedCount: matchedDevices.length,
-          syncedAt
-        }));
-      } catch (err) {
-        res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Invalid payload: ' + err.message }));
-      }
-    });
+  // POST /api/lark-reminders
+  if (req.method === 'POST' && pathname === '/api/lark-reminders') {
+    try {
+      const data = await readBody(req);
+      if (!requireActionPassword(data, res)) return;
+      let result;
+      if (data.action === 'save') { await larkReminders.saveRecipient(data); result = larkReminders.overview(); }
+      else if (data.action === 'test') result = await larkReminders.testConnection();
+      else if (data.action === 'send') result = await larkReminders.run({ scheduled: false });
+      else if (data.action === 'status') result = larkReminders.overview();
+      else if (data.action === 'summary') result = await larkReminders.sendSummary({ scheduled: false });
+      else if (data.action === 'recover') result = await larkReminders.recover(data);
+      else throw new Error('Unknown action');
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(result));
+    } catch (error) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: error.message }));
+    }
     return;
   }
 
-  // GET /api/devices - Get all devices and status
+  // POST /api/integration/device-assignment
+  if (req.method === 'POST' && pathname === '/api/integration/device-assignment') {
+    if (!requireDashboardSyncToken(req, res)) return;
+    try {
+      const data = await readBody(req);
+      const action = String(data.action || '');
+      const deviceNumber = String(data.deviceNumber || '').trim();
+      if (!['issue', 'return'].includes(action) || !deviceNumber) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'action and deviceNumber are required.' }));
+        return;
+      }
+
+      const db = readDb();
+      const normalizedNumber = normalizeDeviceNumber(deviceNumber);
+      const matchedDevices = db.devices.filter(device => normalizeDeviceNumber(device.deviceNumber) === normalizedNumber);
+      if (matchedDevices.length === 0) {
+        res.writeHead(404, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Device is not registered in iOS Device Monitor.', deviceNumber }));
+        return;
+      }
+
+      const userName = action === 'issue' ? String(data.userName || '').trim() : 'ส่วนกลาง';
+      const position = action === 'issue' ? String(data.position || '').trim() : 'คลัง IT';
+      if (action === 'issue' && !userName) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'userName is required when issuing a device.' }));
+        return;
+      }
+
+      const syncedAt = new Date().toISOString();
+      matchedDevices.forEach(device => {
+        device.name = userName;
+        device.userName = userName;
+        device.position = position;
+        device.assignmentStatus = action === 'issue' ? 'issued' : 'returned';
+        device.assignmentSyncedAt = syncedAt;
+        if (action === 'return') device.lastVerifiedAt = '';
+        addLog(
+          db,
+          device.id,
+          userName,
+          action === 'issue'
+            ? `Assigned from IT Dashboard (${device.deviceNumber})`
+            : `Returned from IT Dashboard (${device.deviceNumber})`
+        );
+      });
+      await writeDb(db);
+
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({
+        success: true,
+        action,
+        deviceNumber,
+        matchedCount: matchedDevices.length,
+        syncedAt
+      }));
+    } catch (err) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Invalid payload: ' + err.message }));
+    }
+    return;
+  }
+
+  // GET /api/devices
   if (req.method === 'GET' && pathname === '/api/devices') {
     const db = readDb();
-    
-    // Dynamically calculate current status for each device
     const processedDevices = db.devices.map(device => {
       const { status, nextDueAt, daysRemaining } = calculateDeviceStatus(device.lastVerifiedAt);
       return {
@@ -445,418 +456,377 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  // POST /api/check-password - Validate an action password before opening a protected control
+  // POST /api/check-password
   if (req.method === 'POST' && pathname === '/api/check-password') {
-    const chunks = [];
-    req.on('data', chunk => chunks.push(chunk));
-    req.on('end', () => {
-      const body = chunks.join('');
-      try {
-        const data = JSON.parse(body);
-        if (!requireActionPassword(data, res)) return;
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ valid: true }));
-      } catch (err) {
-        res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Invalid payload: ' + err.message }));
-      }
-    });
+    try {
+      const data = await readBody(req);
+      if (!requireActionPassword(data, res)) return;
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ valid: true }));
+    } catch (err) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Invalid payload: ' + err.message }));
+    }
     return;
   }
 
-  // POST /api/repair-thai-text - Protected maintenance endpoint for repairing corrupted UTF-8 text
+  // POST /api/repair-thai-text
   if (req.method === 'POST' && pathname === '/api/repair-thai-text') {
-    const chunks = [];
-    req.on('data', chunk => chunks.push(chunk));
-    req.on('end', () => {
-      const body = chunks.join('');
-      try {
-        const data = JSON.parse(body);
-        if (!requireActionPassword(data, res)) return;
-        const deviceRepairs = Array.isArray(data.deviceRepairs) ? data.deviceRepairs : [];
-        const logRepairs = Array.isArray(data.logRepairs) ? data.logRepairs : [];
-        const allowedDeviceFields = ['name', 'userName', 'position', 'accessories', 'address'];
-        const allowedLogFields = ['deviceName', 'action'];
-        const db = readDb();
-        let devicesUpdated = 0;
-        let logsUpdated = 0;
+    try {
+      const data = await readBody(req);
+      if (!requireActionPassword(data, res)) return;
+      const deviceRepairs = Array.isArray(data.deviceRepairs) ? data.deviceRepairs : [];
+      const logRepairs = Array.isArray(data.logRepairs) ? data.logRepairs : [];
+      const allowedDeviceFields = ['name', 'userName', 'position', 'accessories', 'address'];
+      const allowedLogFields = ['deviceName', 'action'];
+      const db = readDb();
+      let devicesUpdated = 0;
+      let logsUpdated = 0;
 
-        deviceRepairs.forEach(repair => {
-          const device = db.devices.find(item => item.id === repair.deviceId);
-          if (!device || !repair.fields) return;
-          let changed = false;
-          allowedDeviceFields.forEach(field => {
-            if (typeof repair.fields[field] === 'string' && device[field] !== repair.fields[field]) {
-              device[field] = repair.fields[field];
-              changed = true;
-            }
-          });
-          if (changed) devicesUpdated += 1;
+      deviceRepairs.forEach(repair => {
+        const device = db.devices.find(item => item.id === repair.deviceId);
+        if (!device || !repair.fields) return;
+        let changed = false;
+        allowedDeviceFields.forEach(field => {
+          if (typeof repair.fields[field] === 'string' && device[field] !== repair.fields[field]) {
+            device[field] = repair.fields[field];
+            changed = true;
+          }
         });
+        if (changed) devicesUpdated += 1;
+      });
 
-        logRepairs.forEach(repair => {
-          const log = db.logs.find(item => item.timestamp === repair.timestamp && item.deviceId === repair.deviceId);
-          if (!log || !repair.fields) return;
-          let changed = false;
-          allowedLogFields.forEach(field => {
-            if (typeof repair.fields[field] === 'string' && log[field] !== repair.fields[field]) {
-              log[field] = repair.fields[field];
-              changed = true;
-            }
-          });
-          if (changed) logsUpdated += 1;
+      logRepairs.forEach(repair => {
+        const log = db.logs.find(item => item.timestamp === repair.timestamp && item.deviceId === repair.deviceId);
+        if (!log || !repair.fields) return;
+        let changed = false;
+        allowedLogFields.forEach(field => {
+          if (typeof repair.fields[field] === 'string' && log[field] !== repair.fields[field]) {
+            log[field] = repair.fields[field];
+            changed = true;
+          }
         });
+        if (changed) logsUpdated += 1;
+      });
 
-        await writeDb(db);
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ message: 'Thai text repaired successfully', devicesUpdated, logsUpdated }));
-      } catch (err) {
-        res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Invalid repair payload' }));
-      }
-    });
+      await writeDb(db);
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ message: 'Thai text repaired successfully', devicesUpdated, logsUpdated }));
+    } catch (err) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Invalid repair payload' }));
+    }
     return;
   }
 
-  // POST /api/register - Register a new device
+  // POST /api/register
   if (req.method === 'POST' && pathname === '/api/register') {
-    const chunks = [];
-    req.on('data', chunk => chunks.push(chunk));
-    req.on('end', () => {
-      const body = chunks.join('');
-      try {
-        const data = JSON.parse(body);
-        if (!requireActionPassword(data, res)) return;
-        const { name, position, deviceNumber, accessories, userAgent, isIOS } = data;
+    try {
+      const data = await readBody(req);
+      if (!requireActionPassword(data, res)) return;
+      const { name, position, deviceNumber, accessories, userAgent, isIOS } = data;
 
-        if (!name || name.trim() === '') {
-          res.writeHead(400, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'Device name is required.' }));
-          return;
-        }
-
-        const db = readDb();
-        const clientIp = req.socket.remoteAddress || req.headers['x-forwarded-for'] || 'Unknown';
-        const deviceId = 'dev-' + Date.now().toString(36) + Math.random().toString(36).substring(2, 5);
-
-        const newDevice = {
-          id: deviceId,
-          name: name.trim(),
-          userName: name.trim(),
-          position: (position || '').trim(),
-          deviceNumber: (deviceNumber || '').trim(),
-          accessories: (accessories || '').trim(),
-          userAgent: userAgent || req.headers['user-agent'] || 'Unknown',
-          ip: clientIp,
-          isIOS: !!isIOS,
-          registeredAt: new Date().toISOString(),
-          lastVerifiedAt: ''
-        };
-
-        db.devices.push(newDevice);
-        addLog(db, deviceId, newDevice.name, 'Registered device');
-        await writeDb(db);
-
-        console.log(`Device Registered: ${newDevice.name} (ID: ${deviceId})`);
-
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ message: 'Device registered successfully', device: newDevice }));
-      } catch (err) {
+      if (!name || name.trim() === '') {
         res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Invalid payload: ' + err.message }));
+        res.end(JSON.stringify({ error: 'Device name is required.' }));
+        return;
       }
-    });
+
+      const db = readDb();
+      const clientIp = (req.socket && req.socket.remoteAddress) || req.headers['x-forwarded-for'] || 'Unknown';
+      const deviceId = 'dev-' + Date.now().toString(36) + Math.random().toString(36).substring(2, 5);
+
+      const newDevice = {
+        id: deviceId,
+        name: name.trim(),
+        userName: name.trim(),
+        position: (position || '').trim(),
+        deviceNumber: (deviceNumber || '').trim(),
+        accessories: (accessories || '').trim(),
+        userAgent: userAgent || req.headers['user-agent'] || 'Unknown',
+        ip: clientIp,
+        isIOS: !!isIOS,
+        registeredAt: new Date().toISOString(),
+        lastVerifiedAt: ''
+      };
+
+      db.devices.push(newDevice);
+      addLog(db, deviceId, newDevice.name, 'Registered device');
+      await writeDb(db);
+
+      console.log(`Device Registered: ${newDevice.name} (ID: ${deviceId})`);
+
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ message: 'Device registered successfully', device: newDevice }));
+    } catch (err) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Invalid payload: ' + err.message }));
+    }
     return;
   }
 
-  // POST /api/import-devices - Update matching people and add missing registry rows
+  // POST /api/import-devices
   if (req.method === 'POST' && pathname === '/api/import-devices') {
-    const chunks = [];
-    req.on('data', chunk => chunks.push(chunk));
-    req.on('end', async () => {
-      try {
-        const data = JSON.parse(chunks.join(''));
-        if (!requireActionPassword(data, res)) return;
-        if (!Array.isArray(data.devices) || data.devices.length === 0) {
-          res.writeHead(400, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'Devices must be a non-empty array.' }));
-          return;
-        }
+    try {
+      const data = await readBody(req);
+      if (!requireActionPassword(data, res)) return;
+      if (!Array.isArray(data.devices) || data.devices.length === 0) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Devices must be a non-empty array.' }));
+        return;
+      }
 
-        const importedAt = new Date().toISOString();
-        const incomingDevices = data.devices.map((item, index) => {
-          const userName = String(item.userName || item.name || '').trim();
-          const deviceNumber = String(item.deviceNumber || '').trim();
-          if (!userName) throw new Error(`Missing user name at row ${index + 1}`);
-          return {
-            id: `import-${index + 1}-${deviceNumber || 'device'}`
-              .toLowerCase()
-              .replace(/[^a-z0-9-]+/g, '-')
-              .replace(/-+/g, '-'),
-            name: userName,
-            userName,
-            position: String(item.position || '').trim(),
-            deviceNumber,
-            accessories: String(item.accessories || '').trim(),
-            userAgent: 'Imported from IT Asset Registry',
-            ip: 'Imported',
-            isIOS: !!item.isIOS,
-            registeredAt: String(item.registeredAt || importedAt),
-            lastVerifiedAt: String(item.lastVerifiedAt || importedAt),
-            sourceRecord: item.sourceRecord || null
-          };
-        });
+      const importedAt = new Date().toISOString();
+      const incomingDevices = data.devices.map((item, index) => {
+        const userName = String(item.userName || item.name || '').trim();
+        const deviceNumber = String(item.deviceNumber || '').trim();
+        if (!userName) throw new Error(`Missing user name at row ${index + 1}`);
+        return {
+          id: `import-${index + 1}-${deviceNumber || 'device'}`
+            .toLowerCase()
+            .replace(/[^a-z0-9-]+/g, '-')
+            .replace(/-+/g, '-'),
+          name: userName,
+          userName,
+          position: String(item.position || '').trim(),
+          deviceNumber,
+          accessories: String(item.accessories || '').trim(),
+          userAgent: 'Imported from IT Asset Registry',
+          ip: 'Imported',
+          isIOS: !!item.isIOS,
+          registeredAt: String(item.registeredAt || importedAt),
+          lastVerifiedAt: String(item.lastVerifiedAt || importedAt),
+          sourceRecord: item.sourceRecord || null
+        };
+      });
 
-        const db = readDb();
-        const replaceExisting = data.replace === true;
-        if (replaceExisting) db.devices = [];
-        const normalizeName = value => String(value || '')
-          .normalize('NFKC')
-          .toLowerCase()
-          .replace(/\s+/g, ' ')
-          .trim();
-        const availableByName = new Map();
-        db.devices.forEach(device => {
-          const key = normalizeName(device.userName || device.name);
-          if (!availableByName.has(key)) availableByName.set(key, []);
-          availableByName.get(key).push(device);
-        });
+      const db = readDb();
+      const replaceExisting = data.replace === true;
+      if (replaceExisting) db.devices = [];
+      const normalizeName = value => String(value || '')
+        .normalize('NFKC')
+        .toLowerCase()
+        .replace(/\s+/g, ' ')
+        .trim();
+      const availableByName = new Map();
+      db.devices.forEach(device => {
+        const key = normalizeName(device.userName || device.name);
+        if (!availableByName.has(key)) availableByName.set(key, []);
+        availableByName.get(key).push(device);
+      });
 
-        let updated = 0;
-        let added = 0;
-        incomingDevices.forEach((incoming, index) => {
-          const key = normalizeName(incoming.userName);
-          const candidates = availableByName.get(key) || [];
-          const existing = candidates.shift();
-          if (existing) {
-            Object.assign(existing, {
-              name: incoming.name,
-              userName: incoming.userName,
-              position: incoming.position,
-              deviceNumber: incoming.deviceNumber,
-              accessories: incoming.accessories,
-              isIOS: incoming.isIOS,
-              lastVerifiedAt: incoming.lastVerifiedAt,
-              sourceRecord: incoming.sourceRecord,
-              registrySyncedAt: importedAt
-            });
-            updated += 1;
-          } else {
-            incoming.id = `${incoming.id}-${Date.now().toString(36)}-${index + 1}`;
-            incoming.registrySyncedAt = importedAt;
-            db.devices.push(incoming);
-            added += 1;
-          }
-        });
-
-        db.logs.unshift({
-          timestamp: importedAt,
-          deviceId: 'bulk-import',
-          deviceName: `${incomingDevices.length} registry rows`,
-          action: replaceExisting
-            ? `Asset Registry replaced with ${added} active devices`
-            : `Asset Registry sync: ${updated} updated, ${added} added`
-        });
-        // Keep the cloud payload below JSONBin limits while retaining all fields shown in the UI.
-        db.devices = db.devices.map(device => ({
-          id: device.id,
-          name: device.name || device.userName || '',
-          userName: device.userName || device.name || '',
-          position: device.position || '',
-          deviceNumber: device.deviceNumber || '',
-          accessories: device.accessories || '',
-          isIOS: !!device.isIOS,
-          registeredAt: device.registeredAt || importedAt,
-          lastVerifiedAt: device.lastVerifiedAt || '',
-          ...(device.assignmentStatus ? { assignmentStatus: device.assignmentStatus } : {})
-        }));
-        if (db.logs.length > 20) db.logs = db.logs.slice(0, 20);
-        dbInMemory = db;
-        if (JSONBIN_API_KEY && JSONBIN_BIN_ID) {
-          await saveToJsonBin(db);
+      let updated = 0;
+      let added = 0;
+      incomingDevices.forEach((incoming, index) => {
+        const key = normalizeName(incoming.userName);
+        const candidates = availableByName.get(key) || [];
+        const existing = candidates.shift();
+        if (existing) {
+          Object.assign(existing, {
+            name: incoming.name,
+            userName: incoming.userName,
+            position: incoming.position,
+            deviceNumber: incoming.deviceNumber,
+            accessories: incoming.accessories,
+            isIOS: incoming.isIOS,
+            lastVerifiedAt: incoming.lastVerifiedAt,
+            sourceRecord: incoming.sourceRecord,
+            registrySyncedAt: importedAt
+          });
+          updated += 1;
         } else {
-          fs.mkdirSync(path.dirname(DB_FILE), { recursive: true });
-          fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2));
+          incoming.id = `${incoming.id}-${Date.now().toString(36)}-${index + 1}`;
+          incoming.registrySyncedAt = importedAt;
+          db.devices.push(incoming);
+          added += 1;
         }
+      });
 
-        console.log(`Device registry synced: ${updated} updated, ${added} added, ${db.devices.length} total`);
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({
-          message: 'Device registry synchronized successfully.',
-          sourceCount: incomingDevices.length,
-          replaced: replaceExisting,
-          updated,
-          added,
-          total: db.devices.length
-        }));
-      } catch (err) {
-        console.error('Device registry import failed:', err.message);
-        res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Invalid import payload: ' + err.message }));
+      db.logs.unshift({
+        timestamp: importedAt,
+        deviceId: 'bulk-import',
+        deviceName: `${incomingDevices.length} registry rows`,
+        action: replaceExisting
+          ? `Asset Registry replaced with ${added} active devices`
+          : `Asset Registry sync: ${updated} updated, ${added} added`
+      });
+      db.devices = db.devices.map(device => ({
+        id: device.id,
+        name: device.name || device.userName || '',
+        userName: device.userName || device.name || '',
+        position: device.position || '',
+        deviceNumber: device.deviceNumber || '',
+        accessories: device.accessories || '',
+        isIOS: !!device.isIOS,
+        registeredAt: device.registeredAt || importedAt,
+        lastVerifiedAt: device.lastVerifiedAt || '',
+        ...(device.assignmentStatus ? { assignmentStatus: device.assignmentStatus } : {})
+      }));
+      if (db.logs.length > 20) db.logs = db.logs.slice(0, 20);
+      dbInMemory = db;
+      if (JSONBIN_API_KEY && JSONBIN_BIN_ID) {
+        await saveToJsonBin(db);
+      } else {
+        safeWriteLocalDb(DB_FILE, db);
       }
-    });
+
+      console.log(`Device registry synced: ${updated} updated, ${added} added, ${db.devices.length} total`);
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({
+        message: 'Device registry synchronized successfully.',
+        sourceCount: incomingDevices.length,
+        replaced: replaceExisting,
+        updated,
+        added,
+        total: db.devices.length
+      }));
+    } catch (err) {
+      console.error('Device registry import failed:', err.message);
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Invalid import payload: ' + err.message }));
+    }
     return;
   }
 
-  // POST /api/verify - Verify device presence
+  // POST /api/verify
   if (req.method === 'POST' && pathname === '/api/verify') {
-    const chunks = [];
-    req.on('data', chunk => chunks.push(chunk));
-    req.on('end', async () => {
-      const body = chunks.join('');
-      try {
-        const data = JSON.parse(body);
-        const { deviceId, latitude, longitude } = data;
+    try {
+      const data = await readBody(req);
+      const { deviceId, latitude, longitude } = data;
 
-        if (!deviceId) {
-          res.writeHead(400, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'Device ID is required.' }));
-          return;
-        }
-
-        const db = readDb();
-        const deviceIndex = db.devices.findIndex(d => d.id === deviceId);
-
-        if (deviceIndex === -1) {
-          res.writeHead(404, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'Device not found.' }));
-          return;
-        }
-
-        // Update verification time and GPS coordinates
-        const now = new Date().toISOString();
-        db.devices[deviceIndex].lastVerifiedAt = now;
-        
-        let logMsg = 'Confirmed presence (15-Day Check)';
-        if (latitude !== undefined && latitude !== null && longitude !== undefined && longitude !== null) {
-          db.devices[deviceIndex].latitude = latitude;
-          db.devices[deviceIndex].longitude = longitude;
-          db.devices[deviceIndex].lastLocationTime = now;
-          
-          // Get physical address from OpenStreetMap Nominatim
-          const address = await getAddressFromCoords(latitude, longitude);
-          db.devices[deviceIndex].address = address || '';
-          
-          if (address) {
-            logMsg += ` at ${address}`;
-          } else {
-            logMsg += ` at [Lat: ${latitude.toFixed(6)}, Lng: ${longitude.toFixed(6)}]`;
-          }
-        }
-        
-        addLog(db, deviceId, db.devices[deviceIndex].name, logMsg);
-        await writeDb(db);
-
-        console.log(`Device Verified: ${db.devices[deviceIndex].name} (${deviceId})`);
-
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ message: 'Device verification recorded successfully' }));
-      } catch (err) {
+      if (!deviceId) {
         res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Invalid payload: ' + err.message }));
+        res.end(JSON.stringify({ error: 'Device ID is required.' }));
+        return;
       }
-    });
+
+      const db = readDb();
+      const deviceIndex = db.devices.findIndex(d => d.id === deviceId);
+
+      if (deviceIndex === -1) {
+        res.writeHead(404, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Device not found.' }));
+        return;
+      }
+
+      const now = new Date().toISOString();
+      db.devices[deviceIndex].lastVerifiedAt = now;
+      
+      let logMsg = 'Confirmed presence (15-Day Check)';
+      if (latitude !== undefined && latitude !== null && longitude !== undefined && longitude !== null) {
+        db.devices[deviceIndex].latitude = latitude;
+        db.devices[deviceIndex].longitude = longitude;
+        db.devices[deviceIndex].lastLocationTime = now;
+        
+        const address = await getAddressFromCoords(latitude, longitude);
+        db.devices[deviceIndex].address = address || '';
+        
+        if (address) {
+          logMsg += ` at ${address}`;
+        } else {
+          logMsg += ` at [Lat: ${latitude.toFixed(6)}, Lng: ${longitude.toFixed(6)}]`;
+        }
+      }
+      
+      addLog(db, deviceId, db.devices[deviceIndex].name, logMsg);
+      await writeDb(db);
+
+      console.log(`Device Verified: ${db.devices[deviceIndex].name} (${deviceId})`);
+
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ message: 'Device verification recorded successfully' }));
+    } catch (err) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Invalid payload: ' + err.message }));
+    }
     return;
   }
 
-  // POST /api/delete-device - Remove device
+  // POST /api/delete-device
   if (req.method === 'POST' && pathname === '/api/delete-device') {
-    const chunks = [];
-    req.on('data', chunk => chunks.push(chunk));
-    req.on('end', () => {
-      const body = chunks.join('');
-      try {
-        const data = JSON.parse(body);
-        if (!requireActionPassword(data, res)) return;
-        const { deviceId } = data;
+    try {
+      const data = await readBody(req);
+      if (!requireActionPassword(data, res)) return;
+      const { deviceId } = data;
 
-        if (!deviceId) {
-          res.writeHead(400, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'Device ID is required.' }));
-          return;
-        }
-
-        const db = readDb();
-        const device = db.devices.find(d => d.id === deviceId);
-        if (!device) {
-          res.writeHead(404, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'Device not found.' }));
-          return;
-        }
-
-        db.devices = db.devices.filter(d => d.id !== deviceId);
-        addLog(db, deviceId, device.name, 'Removed device from system');
-        await writeDb(db);
-
-        console.log(`Device Deleted: ${device.name} (${deviceId})`);
-
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ message: 'Device removed successfully.' }));
-      } catch (err) {
+      if (!deviceId) {
         res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Invalid payload: ' + err.message }));
+        res.end(JSON.stringify({ error: 'Device ID is required.' }));
+        return;
       }
-    });
+
+      const db = readDb();
+      const device = db.devices.find(d => d.id === deviceId);
+      if (!device) {
+        res.writeHead(404, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Device not found.' }));
+        return;
+      }
+
+      db.devices = db.devices.filter(d => d.id !== deviceId);
+      addLog(db, deviceId, device.name, 'Removed device from system');
+      await writeDb(db);
+
+      console.log(`Device Deleted: ${device.name} (${deviceId})`);
+
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ message: 'Device removed successfully.' }));
+    } catch (err) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Invalid payload: ' + err.message }));
+    }
     return;
   }
 
-  // POST /api/edit-device - Edit device details
+  // POST /api/edit-device
   if (req.method === 'POST' && pathname === '/api/edit-device') {
-    const chunks = [];
-    req.on('data', chunk => chunks.push(chunk));
-    req.on('end', () => {
-      const body = chunks.join('');
-      try {
-        const data = JSON.parse(body);
-        if (!requireActionPassword(data, res)) return;
-        const { deviceId, name, position, deviceNumber, accessories, isIOS } = data;
+    try {
+      const data = await readBody(req);
+      if (!requireActionPassword(data, res)) return;
+      const { deviceId, name, position, deviceNumber, accessories, isIOS } = data;
 
-        if (!deviceId) {
-          res.writeHead(400, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'Device ID is required.' }));
-          return;
-        }
-
-        if (!name || name.trim() === '') {
-          res.writeHead(400, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'Device name is required.' }));
-          return;
-        }
-
-        const db = readDb();
-        const deviceIndex = db.devices.findIndex(d => d.id === deviceId);
-        if (deviceIndex === -1) {
-          res.writeHead(404, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'Device not found.' }));
-          return;
-        }
-
-        // Update fields
-        db.devices[deviceIndex].name = name.trim();
-        db.devices[deviceIndex].userName = name.trim();
-        db.devices[deviceIndex].position = (position || '').trim();
-        db.devices[deviceIndex].deviceNumber = (deviceNumber || '').trim();
-        db.devices[deviceIndex].accessories = (accessories || '').trim();
-        db.devices[deviceIndex].isIOS = !!isIOS;
-
-        addLog(db, deviceId, name.trim(), 'Edited device details');
-        await writeDb(db);
-
-        console.log(`Device Edited: ${name.trim()} (${deviceId})`);
-
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ message: 'Device details updated successfully.' }));
-      } catch (err) {
+      if (!deviceId) {
         res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Invalid payload: ' + err.message }));
+        res.end(JSON.stringify({ error: 'Device ID is required.' }));
+        return;
       }
-    });
+
+      if (!name || name.trim() === '') {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Device name is required.' }));
+        return;
+      }
+
+      const db = readDb();
+      const deviceIndex = db.devices.findIndex(d => d.id === deviceId);
+      if (deviceIndex === -1) {
+        res.writeHead(404, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Device not found.' }));
+        return;
+      }
+
+      db.devices[deviceIndex].name = name.trim();
+      db.devices[deviceIndex].userName = name.trim();
+      db.devices[deviceIndex].position = (position || '').trim();
+      db.devices[deviceIndex].deviceNumber = (deviceNumber || '').trim();
+      db.devices[deviceIndex].accessories = (accessories || '').trim();
+      db.devices[deviceIndex].isIOS = !!isIOS;
+
+      addLog(db, deviceId, name.trim(), 'Edited device details');
+      await writeDb(db);
+
+      console.log(`Device Edited: ${name.trim()} (${deviceId})`);
+
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ message: 'Device details updated successfully.' }));
+    } catch (err) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Invalid payload: ' + err.message }));
+    }
     return;
   }
 
-  // --- Asset Management APIs ---
-  
-  // GET /api/assets - Get all assets
+  // GET /api/assets
   if (req.method === 'GET' && pathname === '/api/assets') {
     const db = readDb();
     res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -867,272 +837,253 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  // POST /api/register-asset - Register a new asset
+  // POST /api/register-asset
   if (req.method === 'POST' && pathname === '/api/register-asset') {
-    const chunks = [];
-    req.on('data', chunk => chunks.push(chunk));
-    req.on('end', () => {
-      const body = chunks.join('');
-      try {
-        const data = JSON.parse(body);
-        const { name, category, serialNumber, location, shelfLocation, type, image, status, borrower, dueDate } = data;
+    try {
+      const data = await readBody(req);
+      const { name, category, serialNumber, location, shelfLocation, type, image, status, borrower, dueDate } = data;
 
-        if (!name || name.trim() === '') {
-          res.writeHead(400, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'Asset name is required.' }));
-          return;
-        }
-
-        const db = readDb();
-        const assetId = 'ast-' + Date.now().toString(36) + Math.random().toString(36).substring(2, 5);
-
-        const newAsset = {
-          id: assetId,
-          name: name.trim(),
-          category: (category || '').trim(),
-          sn: (serialNumber || '').trim(),
-          location: (location || '').trim(),
-          shelfLocation: (shelfLocation || '').trim(),
-          status: status || 'available',
-          borrower: (borrower || '').trim(),
-          dueDate: dueDate || null,
-          type: type || 'custom',
-          image: image || null,
-          registeredAt: new Date().toISOString(),
-          lastScannedAt: null
-        };
-
-        db.assets.push(newAsset);
-        addLog(db, assetId, newAsset.name, 'Registered new asset');
-        await writeDb(db);
-
-        console.log(`Asset Registered: ${newAsset.name} (ID: ${assetId})`);
-
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ message: 'Asset registered successfully', asset: newAsset }));
-      } catch (err) {
+      if (!name || name.trim() === '') {
         res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Invalid payload: ' + err.message }));
+        res.end(JSON.stringify({ error: 'Asset name is required.' }));
+        return;
       }
-    });
+
+      const db = readDb();
+      const assetId = 'ast-' + Date.now().toString(36) + Math.random().toString(36).substring(2, 5);
+
+      const newAsset = {
+        id: assetId,
+        name: name.trim(),
+        category: (category || '').trim(),
+        sn: (serialNumber || '').trim(),
+        location: (location || '').trim(),
+        shelfLocation: (shelfLocation || '').trim(),
+        status: status || 'available',
+        borrower: (borrower || '').trim(),
+        dueDate: dueDate || null,
+        type: type || 'custom',
+        image: image || null,
+        registeredAt: new Date().toISOString(),
+        lastScannedAt: null
+      };
+
+      db.assets.push(newAsset);
+      addLog(db, assetId, newAsset.name, 'Registered new asset');
+      await writeDb(db);
+
+      console.log(`Asset Registered: ${newAsset.name} (ID: ${assetId})`);
+
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ message: 'Asset registered successfully', asset: newAsset }));
+    } catch (err) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Invalid payload: ' + err.message }));
+    }
     return;
   }
 
-  // POST /api/edit-asset - Edit asset details
+  // POST /api/edit-asset
   if (req.method === 'POST' && pathname === '/api/edit-asset') {
-    const chunks = [];
-    req.on('data', chunk => chunks.push(chunk));
-    req.on('end', () => {
-      const body = chunks.join('');
-      try {
-        const data = JSON.parse(body);
-        const { assetId, name, category, serialNumber, location, shelfLocation, type, image, status, borrower, dueDate } = data;
+    try {
+      const data = await readBody(req);
+      const { assetId, name, category, serialNumber, location, shelfLocation, type, image, status, borrower, dueDate } = data;
 
-        if (!assetId || !name || name.trim() === '') {
-          res.writeHead(400, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'Asset ID and name are required.' }));
-          return;
-        }
-
-        const db = readDb();
-        const index = db.assets.findIndex(a => a.id === assetId);
-        if (index === -1) {
-          res.writeHead(404, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'Asset not found.' }));
-          return;
-        }
-
-        db.assets[index].name = name.trim();
-        db.assets[index].category = (category || '').trim();
-        db.assets[index].sn = (serialNumber || '').trim();
-        db.assets[index].location = (location || '').trim();
-        if (shelfLocation !== undefined) db.assets[index].shelfLocation = (shelfLocation || '').trim();
-        if (status !== undefined) db.assets[index].status = status;
-        if (borrower !== undefined) db.assets[index].borrower = (borrower || '').trim();
-        if (dueDate !== undefined) db.assets[index].dueDate = dueDate;
-        db.assets[index].type = type || db.assets[index].type || 'custom';
-        
-        // Only update image if it's provided in the payload (so we don't wipe it out if omitted)
-        if (image !== undefined) {
-          db.assets[index].image = image;
-        }
-
-        addLog(db, assetId, name.trim(), 'Edited asset details');
-        await writeDb(db);
-
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ message: 'Asset updated successfully.' }));
-      } catch (err) {
+      if (!assetId || !name || name.trim() === '') {
         res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Invalid payload: ' + err.message }));
+        res.end(JSON.stringify({ error: 'Asset ID and name are required.' }));
+        return;
       }
-    });
+
+      const db = readDb();
+      const index = db.assets.findIndex(a => a.id === assetId);
+      if (index === -1) {
+        res.writeHead(404, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Asset not found.' }));
+        return;
+      }
+
+      db.assets[index].name = name.trim();
+      db.assets[index].category = (category || '').trim();
+      db.assets[index].sn = (serialNumber || '').trim();
+      db.assets[index].location = (location || '').trim();
+      if (shelfLocation !== undefined) db.assets[index].shelfLocation = (shelfLocation || '').trim();
+      if (status !== undefined) db.assets[index].status = status;
+      if (borrower !== undefined) db.assets[index].borrower = (borrower || '').trim();
+      if (dueDate !== undefined) db.assets[index].dueDate = dueDate;
+      db.assets[index].type = type || db.assets[index].type || 'custom';
+      
+      if (image !== undefined) {
+        db.assets[index].image = image;
+      }
+
+      addLog(db, assetId, name.trim(), 'Edited asset details');
+      await writeDb(db);
+
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ message: 'Asset updated successfully.' }));
+    } catch (err) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Invalid payload: ' + err.message }));
+    }
     return;
   }
 
-  // POST /api/delete-asset - Remove asset
+  // POST /api/delete-asset
   if (req.method === 'POST' && pathname === '/api/delete-asset') {
-    const chunks = [];
-    req.on('data', chunk => chunks.push(chunk));
-    req.on('end', () => {
-      const body = chunks.join('');
-      try {
-        const data = JSON.parse(body);
-        const { assetId } = data;
+    try {
+      const data = await readBody(req);
+      const { assetId } = data;
 
-        if (!assetId) {
-          res.writeHead(400, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'Asset ID is required.' }));
-          return;
-        }
-
-        const db = readDb();
-        const asset = db.assets.find(a => a.id === assetId);
-        if (!asset) {
-          res.writeHead(404, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'Asset not found.' }));
-          return;
-        }
-
-        db.assets = db.assets.filter(a => a.id !== assetId);
-        addLog(db, assetId, asset.name, 'Removed asset from system');
-        await writeDb(db);
-
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ message: 'Asset removed successfully.' }));
-      } catch (err) {
+      if (!assetId) {
         res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Invalid payload: ' + err.message }));
+        res.end(JSON.stringify({ error: 'Asset ID is required.' }));
+        return;
       }
-    });
+
+      const db = readDb();
+      const asset = db.assets.find(a => a.id === assetId);
+      if (!asset) {
+        res.writeHead(404, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Asset not found.' }));
+        return;
+      }
+
+      db.assets = db.assets.filter(a => a.id !== assetId);
+      addLog(db, assetId, asset.name, 'Removed asset from system');
+      await writeDb(db);
+
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ message: 'Asset removed successfully.' }));
+    } catch (err) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Invalid payload: ' + err.message }));
+    }
     return;
   }
 
-  // POST /api/scan-asset - Scan and check-in asset
+  // POST /api/scan-asset
   if (req.method === 'POST' && pathname === '/api/scan-asset') {
-    const chunks = [];
-    req.on('data', chunk => chunks.push(chunk));
-    req.on('end', () => {
-      const body = chunks.join('');
-      try {
-        const data = JSON.parse(body);
-        const { assetId } = data;
+    try {
+      const data = await readBody(req);
+      const { assetId } = data;
 
-        if (!assetId) {
-          res.writeHead(400, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'Asset ID is required.' }));
-          return;
-        }
-
-        const db = readDb();
-        const index = db.assets.findIndex(a => a.id === assetId);
-        if (index === -1) {
-          res.writeHead(404, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'Asset not found.' }));
-          return;
-        }
-
-        db.assets[index].lastScannedAt = new Date().toISOString();
-        addLog(db, assetId, db.assets[index].name, 'Asset Scanned via QR');
-        await writeDb(db);
-
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ message: 'Asset scan recorded successfully.', asset: db.assets[index] }));
-      } catch (err) {
+      if (!assetId) {
         res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Invalid payload: ' + err.message }));
+        res.end(JSON.stringify({ error: 'Asset ID is required.' }));
+        return;
       }
-    });
+
+      const db = readDb();
+      const index = db.assets.findIndex(a => a.id === assetId);
+      if (index === -1) {
+        res.writeHead(404, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Asset not found.' }));
+        return;
+      }
+
+      db.assets[index].lastScannedAt = new Date().toISOString();
+      addLog(db, assetId, db.assets[index].name, 'Asset Scanned via QR');
+      await writeDb(db);
+
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ message: 'Asset scan recorded successfully.', asset: db.assets[index] }));
+    } catch (err) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Invalid payload: ' + err.message }));
+    }
     return;
   }
 
-  
-  // POST /api/borrow-asset - Check out asset / borrow
+  // POST /api/borrow-asset
   if (req.method === 'POST' && pathname === '/api/borrow-asset') {
-    const chunks = [];
-    req.on('data', chunk => chunks.push(chunk));
-    req.on('end', () => {
-      try {
-        const data = JSON.parse(chunks.join(''));
-        const { assetId, borrower, dueDate, note } = data;
-        if (!assetId || !borrower) {
-          res.writeHead(400, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'Asset ID and Borrower name are required.' }));
-          return;
-        }
-        const db = readDb();
-        const index = db.assets.findIndex(a => a.id === assetId);
-        if (index === -1) {
-          res.writeHead(404, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'Asset not found.' }));
-          return;
-        }
-        db.assets[index].status = 'borrowed';
-        db.assets[index].borrower = borrower.trim();
-        db.assets[index].borrowedAt = new Date().toISOString();
-        db.assets[index].dueDate = dueDate || null;
-        db.assets[index].borrowNote = (note || '').trim();
-
-        addLog(db, assetId, db.assets[index].name, '[Store] เบิกยืมอุปกรณ์โดย: ' + borrower.trim() + (dueDate ? ' (กำหนดคืน: ' + dueDate + ')' : ''));
-        await writeDb(db);
-
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ message: 'บันทึกการเบิกยืมสำเร็จ', asset: db.assets[index] }));
-      } catch (err) {
+    try {
+      const data = await readBody(req);
+      const { assetId, borrower, dueDate, note } = data;
+      if (!assetId || !borrower) {
         res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Invalid payload: ' + err.message }));
+        res.end(JSON.stringify({ error: 'Asset ID and Borrower name are required.' }));
+        return;
       }
-    });
+      const db = readDb();
+      const index = db.assets.findIndex(a => a.id === assetId);
+      if (index === -1) {
+        res.writeHead(404, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Asset not found.' }));
+        return;
+      }
+      db.assets[index].status = 'borrowed';
+      db.assets[index].borrower = borrower.trim();
+      db.assets[index].borrowedAt = new Date().toISOString();
+      db.assets[index].dueDate = dueDate || null;
+      db.assets[index].borrowNote = (note || '').trim();
+
+      addLog(db, assetId, db.assets[index].name, '[Store] เบิกยืมอุปกรณ์โดย: ' + borrower.trim() + (dueDate ? ' (กำหนดคืน: ' + dueDate + ')' : ''));
+      await writeDb(db);
+
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ message: 'บันทึกการเบิกยืมสำเร็จ', asset: db.assets[index] }));
+    } catch (err) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Invalid payload: ' + err.message }));
+    }
     return;
   }
 
-  // POST /api/return-asset - Check in asset / return
+  // POST /api/return-asset
   if (req.method === 'POST' && pathname === '/api/return-asset') {
-    const chunks = [];
-    req.on('data', chunk => chunks.push(chunk));
-    req.on('end', () => {
-      try {
-        const data = JSON.parse(chunks.join(''));
-        const { assetId, conditionNote } = data;
-        if (!assetId) {
-          res.writeHead(400, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'Asset ID is required.' }));
-          return;
-        }
-        const db = readDb();
-        const index = db.assets.findIndex(a => a.id === assetId);
-        if (index === -1) {
-          res.writeHead(404, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'Asset not found.' }));
-          return;
-        }
-        const prevBorrower = db.assets[index].borrower || 'ไม่ระบุ';
-        db.assets[index].status = 'available';
-        db.assets[index].borrower = '';
-        db.assets[index].dueDate = null;
-        db.assets[index].returnedAt = new Date().toISOString();
-        db.assets[index].lastScannedAt = new Date().toISOString();
-
-        addLog(db, assetId, db.assets[index].name, '[Store] รับคืนอุปกรณ์เข้าคลังจาก: ' + prevBorrower + (conditionNote ? ' (สภาพ: ' + conditionNote + ')' : ''));
-        await writeDb(db);
-
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ message: 'รับคืนอุปกรณ์เข้าคลังสโตร์เรียบร้อย', asset: db.assets[index] }));
-      } catch (err) {
+    try {
+      const data = await readBody(req);
+      const { assetId, conditionNote } = data;
+      if (!assetId) {
         res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Invalid payload: ' + err.message }));
+        res.end(JSON.stringify({ error: 'Asset ID is required.' }));
+        return;
       }
-    });
+      const db = readDb();
+      const index = db.assets.findIndex(a => a.id === assetId);
+      if (index === -1) {
+        res.writeHead(404, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Asset not found.' }));
+        return;
+      }
+      const prevBorrower = db.assets[index].borrower || 'ไม่ระบุ';
+      db.assets[index].status = 'available';
+      db.assets[index].borrower = '';
+      db.assets[index].dueDate = null;
+      db.assets[index].returnedAt = new Date().toISOString();
+      db.assets[index].lastScannedAt = new Date().toISOString();
+
+      addLog(db, assetId, db.assets[index].name, '[Store] รับคืนอุปกรณ์เข้าคลังจาก: ' + prevBorrower + (conditionNote ? ' (สภาพ: ' + conditionNote + ')' : ''));
+      await writeDb(db);
+
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ message: 'รับคืนอุปกรณ์เข้าคลังสโตร์เรียบร้อย', asset: db.assets[index] }));
+    } catch (err) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Invalid payload: ' + err.message }));
+    }
     return;
+  }
+
+  // Fallback 404 for unhandled API
+  res.writeHead(404, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify({ error: 'Not Found', path: pathname }));
+}
+
+const server = http.createServer(async (req, res) => {
+  const qPos = req.url.indexOf('?');
+  const pathname = qPos !== -1 ? req.url.substring(0, qPos) : req.url;
+
+  if (pathname.startsWith('/api')) {
+    return handleApiRequest(req, res);
   }
 
   // --- Static File Server ---
   let reqUrl = pathname === '/' ? '/index.html' : pathname;
-  // Prevent directory traversal attacks
-  const safeSuffix = path.normalize(reqUrl).replace(/^(\.\.[\/\\])+/, '');
+  const safeSuffix = path.normalize(reqUrl).replace(/^(\\..[\\\/])+/, '');
   const filePath = path.join(PUBLIC_DIR, safeSuffix);
 
-  // Check if file is inside public directory
   if (!filePath.startsWith(PUBLIC_DIR)) {
     res.writeHead(403, { 'Content-Type': 'text/plain' });
     res.end('Forbidden');
@@ -1174,8 +1125,10 @@ if (require.main === module) {
   });
 }
 
-const handler = (req, res) => {
-  server.emit('request', req, res);
+module.exports = {
+  server,
+  handleApiRequest,
+  ensureDbReady,
+  readDb,
+  writeDb
 };
-handler.server = server;
-module.exports = handler;
