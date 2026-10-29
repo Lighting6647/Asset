@@ -1071,42 +1071,65 @@ async function handleApiRequest(req, res) {
   res.end(JSON.stringify({ error: 'Not Found', path: pathname }));
 }
 
-const server = http.createServer(async (req, res) => {
-  const qPos = req.url.indexOf('?');
-  const pathname = qPos !== -1 ? req.url.substring(0, qPos) : req.url;
+function serveStaticFile(req, res) {
+  const qPos = (req.url || '').indexOf('?');
+  const pathname = qPos !== -1 ? req.url.substring(0, qPos) : (req.url || '/');
+  let reqUrl = pathname === '/' ? '/index.html' : pathname;
+  const safeSuffix = path.normalize(reqUrl).replace(/^(\.\.[\/\\])+/, '');
 
-  if (pathname.startsWith('/api')) {
-    return handleApiRequest(req, res);
+  const candidateDirs = [
+    PUBLIC_DIR,
+    path.join(process.cwd(), 'public'),
+    path.join(__dirname, 'public'),
+    __dirname,
+    process.cwd()
+  ];
+
+  let foundPath = null;
+  for (const dir of candidateDirs) {
+    const candidate = path.join(dir, safeSuffix);
+    try {
+      if (fs.existsSync(candidate) && !fs.statSync(candidate).isDirectory()) {
+        foundPath = candidate;
+        break;
+      }
+    } catch (_) {}
   }
 
-  // --- Static File Server ---
-  let reqUrl = pathname === '/' ? '/index.html' : pathname;
-  const safeSuffix = path.normalize(reqUrl).replace(/^(\\..[\\\/])+/, '');
-  const filePath = path.join(PUBLIC_DIR, safeSuffix);
-
-  if (!filePath.startsWith(PUBLIC_DIR)) {
-    res.writeHead(403, { 'Content-Type': 'text/plain' });
-    res.end('Forbidden');
+  if (!foundPath) {
+    res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+    res.end('404 Not Found: ' + pathname);
     return;
   }
 
-  fs.readFile(filePath, (err, content) => {
-    if (err) {
-      if (err.code === 'ENOENT') {
-        res.writeHead(404, { 'Content-Type': 'text/plain' });
-        res.end('404 Not Found');
-      } else {
-        res.writeHead(500, { 'Content-Type': 'text/plain' });
-        res.end(`500 Internal Server Error: ${err.code}`);
-      }
-    } else {
-      const ext = path.extname(filePath).toLowerCase();
-      const contentType = mimeTypes[ext] || 'application/octet-stream';
-      res.writeHead(200, { 'Content-Type': contentType });
-      res.end(content);
+  const ext = path.extname(foundPath).toLowerCase();
+  const contentType = mimeTypes[ext] || 'application/octet-stream';
+  const content = fs.readFileSync(foundPath);
+  res.writeHead(200, { 'Content-Type': contentType });
+  res.end(content);
+}
+
+async function appHandler(req, res) {
+  try {
+    await ensureDbReady();
+    const qPos = (req.url || '').indexOf('?');
+    const pathname = qPos !== -1 ? req.url.substring(0, qPos) : (req.url || '/');
+
+    if (pathname.startsWith('/api')) {
+      return await handleApiRequest(req, res);
     }
-  });
-});
+
+    return serveStaticFile(req, res);
+  } catch (err) {
+    console.error('Unhandled appHandler error:', err);
+    if (!res.headersSent) {
+      res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' });
+      res.end('Server Error: ' + err.message);
+    }
+  }
+}
+
+const server = http.createServer(appHandler);
 
 if (require.main === module) {
   ensureDbReady().then(() => {
@@ -1125,10 +1148,10 @@ if (require.main === module) {
   });
 }
 
-module.exports = {
-  server,
-  handleApiRequest,
-  ensureDbReady,
-  readDb,
-  writeDb
-};
+appHandler.server = server;
+appHandler.handleApiRequest = handleApiRequest;
+appHandler.ensureDbReady = ensureDbReady;
+appHandler.readDb = readDb;
+appHandler.writeDb = writeDb;
+
+module.exports = appHandler;
