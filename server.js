@@ -61,7 +61,7 @@ function readDb() {
 function writeDb(data) {
   dbInMemory = data;
   if (JSONBIN_API_KEY && JSONBIN_BIN_ID) {
-    saveToJsonBin(data)
+    return saveToJsonBin(data)
       .then(() => console.log('Successfully synced database to JSONBin cloud!'))
       .catch((err) => console.error('Failed to sync to JSONBin cloud:', err.message));
   } else {
@@ -71,6 +71,7 @@ function writeDb(data) {
     } catch (err) {
       console.error('Error writing local database:', err);
     }
+    return Promise.resolve();
   }
 }
 
@@ -143,6 +144,16 @@ function saveToJsonBin(data) {
   });
 }
 
+let dbReadyPromise = null;
+function ensureDbReady() {
+  if (!dbReadyPromise) {
+    dbReadyPromise = new Promise((resolve) => {
+      initDb(() => resolve());
+    });
+  }
+  return dbReadyPromise;
+}
+
 // Initialize database
 function initDb(callback) {
   if (JSONBIN_API_KEY && JSONBIN_BIN_ID) {
@@ -150,16 +161,19 @@ function initDb(callback) {
     fetchFromJsonBin()
       .then((data) => {
         dbInMemory = data || { devices: [], logs: [], assets: [] };
+        if (!dbInMemory.devices) dbInMemory.devices = [];
+        if (!dbInMemory.logs) dbInMemory.logs = [];
         if (!dbInMemory.assets) dbInMemory.assets = [];
         console.log('Database successfully loaded from JSONBin cloud!');
         callback();
       })
       .catch((err) => {
-        console.error('CRITICAL: Failed to load database from JSONBin cloud. To prevent data wipe, shutting down server:', err.message);
-        process.exit(1);
+        console.error('Failed to load database from JSONBin cloud:', err.message);
+        loadLocalDb();
+        callback();
       });
   } else {
-    console.log('Using local file system database. WARNING: On Render free tier, this data will be lost on restart!');
+    console.log('Using local file system database.');
     loadLocalDb();
     callback();
   }
@@ -291,7 +305,8 @@ const mimeTypes = {
   '.ico': 'image/x-icon'
 };
 
-const server = http.createServer((req, res) => {
+const server = http.createServer(async (req, res) => {
+  await ensureDbReady();
   // Decode request bodies as a continuous UTF-8 stream so Thai characters
   // are never corrupted when a multi-byte character spans network chunks.
   req.setEncoding('utf8');
@@ -388,7 +403,7 @@ const server = http.createServer((req, res) => {
               : `Returned from IT Dashboard (${device.deviceNumber})`
           );
         });
-        writeDb(db);
+        await writeDb(db);
 
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({
@@ -492,7 +507,7 @@ const server = http.createServer((req, res) => {
           if (changed) logsUpdated += 1;
         });
 
-        writeDb(db);
+        await writeDb(db);
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ message: 'Thai text repaired successfully', devicesUpdated, logsUpdated }));
       } catch (err) {
@@ -540,7 +555,7 @@ const server = http.createServer((req, res) => {
 
         db.devices.push(newDevice);
         addLog(db, deviceId, newDevice.name, 'Registered device');
-        writeDb(db);
+        await writeDb(db);
 
         console.log(`Device Registered: ${newDevice.name} (ID: ${deviceId})`);
 
@@ -730,7 +745,7 @@ const server = http.createServer((req, res) => {
         }
         
         addLog(db, deviceId, db.devices[deviceIndex].name, logMsg);
-        writeDb(db);
+        await writeDb(db);
 
         console.log(`Device Verified: ${db.devices[deviceIndex].name} (${deviceId})`);
 
@@ -771,7 +786,7 @@ const server = http.createServer((req, res) => {
 
         db.devices = db.devices.filter(d => d.id !== deviceId);
         addLog(db, deviceId, device.name, 'Removed device from system');
-        writeDb(db);
+        await writeDb(db);
 
         console.log(`Device Deleted: ${device.name} (${deviceId})`);
 
@@ -825,7 +840,7 @@ const server = http.createServer((req, res) => {
         db.devices[deviceIndex].isIOS = !!isIOS;
 
         addLog(db, deviceId, name.trim(), 'Edited device details');
-        writeDb(db);
+        await writeDb(db);
 
         console.log(`Device Edited: ${name.trim()} (${deviceId})`);
 
@@ -889,7 +904,7 @@ const server = http.createServer((req, res) => {
 
         db.assets.push(newAsset);
         addLog(db, assetId, newAsset.name, 'Registered new asset');
-        writeDb(db);
+        await writeDb(db);
 
         console.log(`Asset Registered: ${newAsset.name} (ID: ${assetId})`);
 
@@ -943,7 +958,7 @@ const server = http.createServer((req, res) => {
         }
 
         addLog(db, assetId, name.trim(), 'Edited asset details');
-        writeDb(db);
+        await writeDb(db);
 
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ message: 'Asset updated successfully.' }));
@@ -981,7 +996,7 @@ const server = http.createServer((req, res) => {
 
         db.assets = db.assets.filter(a => a.id !== assetId);
         addLog(db, assetId, asset.name, 'Removed asset from system');
-        writeDb(db);
+        await writeDb(db);
 
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ message: 'Asset removed successfully.' }));
@@ -1019,7 +1034,7 @@ const server = http.createServer((req, res) => {
 
         db.assets[index].lastScannedAt = new Date().toISOString();
         addLog(db, assetId, db.assets[index].name, 'Asset Scanned via QR');
-        writeDb(db);
+        await writeDb(db);
 
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ message: 'Asset scan recorded successfully.', asset: db.assets[index] }));
@@ -1059,7 +1074,7 @@ const server = http.createServer((req, res) => {
         db.assets[index].borrowNote = (note || '').trim();
 
         addLog(db, assetId, db.assets[index].name, '[Store] เบิกยืมอุปกรณ์โดย: ' + borrower.trim() + (dueDate ? ' (กำหนดคืน: ' + dueDate + ')' : ''));
-        writeDb(db);
+        await writeDb(db);
 
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ message: 'บันทึกการเบิกยืมสำเร็จ', asset: db.assets[index] }));
@@ -1099,7 +1114,7 @@ const server = http.createServer((req, res) => {
         db.assets[index].lastScannedAt = new Date().toISOString();
 
         addLog(db, assetId, db.assets[index].name, '[Store] รับคืนอุปกรณ์เข้าคลังจาก: ' + prevBorrower + (conditionNote ? ' (สภาพ: ' + conditionNote + ')' : ''));
-        writeDb(db);
+        await writeDb(db);
 
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ message: 'รับคืนอุปกรณ์เข้าคลังสโตร์เรียบร้อย', asset: db.assets[index] }));
@@ -1142,17 +1157,25 @@ const server = http.createServer((req, res) => {
   });
 });
 
-initDb(() => {
-  async function pollLark() {
-    try { await larkReminders.run(); } catch (error) { console.error('Lark reminder:', error.message); }
-    try { await larkReminders.sendSummary(); } catch (error) { console.error('Lark summary:', error.message); }
-  }
-  setInterval(pollLark, 60000).unref();
-  pollLark();
-  server.listen(PORT, () => {
-    console.log(`==================================================`);
-    console.log(`📱 iOS Device Monitor server is running locally!`);
-    console.log(`🔗 Access Portal: http://localhost:${PORT}`);
-    console.log(`==================================================`);
+if (require.main === module) {
+  ensureDbReady().then(() => {
+    async function pollLark() {
+      try { await larkReminders.run(); } catch (error) { console.error('Lark reminder:', error.message); }
+      try { await larkReminders.sendSummary(); } catch (error) { console.error('Lark summary:', error.message); }
+    }
+    setInterval(pollLark, 60000).unref();
+    pollLark();
+    server.listen(PORT, () => {
+      console.log(`==================================================`);
+      console.log(`📱 iOS Device Monitor server is running locally!`);
+      console.log(`🔗 Access Portal: http://localhost:${PORT}`);
+      console.log(`==================================================`);
+    });
   });
-});
+}
+
+const handler = (req, res) => {
+  server.emit('request', req, res);
+};
+handler.server = server;
+module.exports = handler;
